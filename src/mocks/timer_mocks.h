@@ -1,13 +1,8 @@
 #pragma once
 
-#include <cstdint>
-
 // Mock timer system — advances simulated time for test scenarios.
+// The actual timer function declarations come from RZA1/ostm/ostm.h.
+// This header only adds the test-specific passMockTime function.
 extern "C" {
 void passMockTime(double seconds);
-void enableTimer(int timerNo);
-void disableTimer(int timerNo);
-bool isTimerEnabled(int timerNo);
-void setTimerValue(int timerNo, uint32_t timerValue);
-uint32_t getTimerValue(int timerNo);
 }

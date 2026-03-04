@@ -1,6 +1,10 @@
 #include "CppUTest/TestHarness.h"
 #include "test_fixture.h"
 
+extern "C" {
+#include "RZA1/ostm/ostm.h"
+}
+
 // ─── Smoke tests: verify the harness infrastructure works ───────────────
 
 TEST_GROUP(HarnessSmoke){};

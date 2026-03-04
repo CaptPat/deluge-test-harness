@@ -1,33 +1,9 @@
 #pragma once
 
+#include "clip_mocks.h"
+#include "util/d_string.h"
+
 #include <cstdint>
-#include <vector>
-
-// Minimal Clip/Song mocks for the test harness.
-// These mirror the firmware's test mocks with extensions for integration testing.
-
-enum class ClipType { INSTRUMENT, AUDIO };
-enum class InstrumentRemoval { NONE };
-
-class Clip {
-public:
-	Clip(int id_ = -1) : id(id_) {}
-	int id;
-	ClipType type = ClipType::INSTRUMENT;
-	bool deleted = false;
-};
-
-class ClipArray {
-public:
-	Clip** getElementAddress(int32_t index) { return &data[index]; }
-	Clip* getClipAtIndex(int32_t index) { return data[index]; }
-	int32_t getNumElements() { return static_cast<int32_t>(data.size()); }
-	void clear() { data.clear(); }
-	void push(Clip* clip) { data.push_back(clip); }
-
-private:
-	std::vector<Clip*> data;
-};
 
 class Song {
 public:
@@ -40,11 +16,34 @@ public:
 		sessionClips.clear();
 		arrangementOnlyClips.clear();
 	}
+	void getNoteLengthName(StringBuf& buffer, uint32_t noteLength, char const* notesString = "-notes",
+	                       bool clarifyPerColumn = false) const {
+		(void)buffer;
+		(void)noteLength;
+		(void)notesString;
+		(void)clarifyPerColumn;
+	}
 
 	ClipArray sessionClips;
 	ClipArray arrangementOnlyClips;
 	int32_t insideWorldTickMagnitude = 1;
+	int32_t insideWorldTickMagnitudeOffsetFromBPM = 0;
+
+	// Phase 10: consequence system stubs
+	int8_t swingAmount = 0;
+
+	float getTimePerTimerTickFloat() { return 22675.7f; } // ~120 BPM
+	void setTimePerTimerTick(uint64_t newTimeBig, bool doSongUpdate = true) {
+		(void)newTimeBig;
+		(void)doSongUpdate;
+	}
+	void removeYNoteFromMode(int32_t noteWithinOctave) { (void)noteWithinOctave; }
+	bool isClipActive(Clip* clip) {
+		(void)clip;
+		return false;
+	}
 };
 
 extern Song* currentSong;
+extern Song* preLoadedSong;
 extern Song testSong;

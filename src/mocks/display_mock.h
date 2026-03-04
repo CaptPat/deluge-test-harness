@@ -1,22 +1,28 @@
 #pragma once
 
-#include <cstdint>
+#include "hid/display/display.h"
 #include <string>
 
-// Minimal Display mock that captures display state for test assertions.
-// Extends the firmware's test mock with state capture.
-class Display {
+// Concrete Display mock that captures state for test assertions.
+// Inherits from the firmware's abstract Display class.
+class MockDisplay : public deluge::hid::Display {
 public:
-	bool have7SEG() { return false; }
-	bool haveOLED() { return true; }
+	MockDisplay() : Display(deluge::hid::DisplayType::OLED) {}
 
-	// Capture display text for assertions
+	// Captured state for assertions
 	std::string lastText;
-	void setText(const char* text) { lastText = text ? text : ""; }
 
-	void clearMainImage() {}
-	void sendMainImage() {}
+	void setText(std::string_view newText, bool alignRight = false, uint8_t drawDot = 255, bool doBlink = false,
+	             uint8_t* newBlinkMask = nullptr, bool blinkImmediately = false, bool shouldBlinkFast = false,
+	             int32_t scrollPos = 0, uint8_t* blinkAddition = nullptr,
+	             bool justReplaceBottomLayer = false) override {
+		lastText = std::string(newText);
+	}
+
+	void displayPopup(char const* newText, int8_t numFlashes = 3, bool alignRight = false, uint8_t drawDot = 255,
+	                   int32_t blinkSpeed = 1, PopupType type = PopupType::GENERAL) override {
+		lastText = newText ? newText : "";
+	}
 };
 
-extern Display* display;
-extern Display testDisplay;
+extern MockDisplay testDisplay;

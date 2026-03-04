@@ -1,0 +1,65 @@
+name: Test Harness CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-linux:
+    name: Build and Test (Linux GCC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14 g++-14 ninja-build
+
+      - uses: lukka/get-cmake@latest
+
+      - name: Configure
+        run: cmake -B build -G Ninja
+        env:
+          CC: gcc-14
+          CXX: g++-14
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  test-windows:
+    name: Build and Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Configure
+        shell: msys2 {0}
+        run: cmake -B build -G Ninja
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build
+
+      - name: Test
+        shell: msys2 {0}
+        run: ctest --test-dir build --output-on-failure

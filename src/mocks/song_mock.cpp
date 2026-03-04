@@ -2,3 +2,4 @@
 
 Song testSong;
 Song* currentSong = &testSong;
+Song* preLoadedSong = nullptr;
