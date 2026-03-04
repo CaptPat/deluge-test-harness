@@ -196,6 +196,20 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_horizontal_shift.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_length.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_length.cpp
+    # Phase 12A: Leaf files (trivial deps)
+    ${FIRMWARE_SRC}/deluge/hid/display/numeric_layer/numeric_layer.cpp
+    ${FIRMWARE_SRC}/deluge/storage/multi_range/multi_range.cpp
+    ${FIRMWARE_SRC}/deluge/storage/audio/audio_file_vector.cpp
+    # Phase 12B: DSP Delay
+    ${FIRMWARE_SRC}/deluge/dsp/delay/delay.cpp
+    # Phase 12C: Granular DSP
+    ${FIRMWARE_SRC}/deluge/dsp/granular/GranularProcessor.cpp
+    # Phase 12D: HID encoder (GPIO mocked)
+    ${FIRMWARE_SRC}/deluge/hid/encoder.cpp
+    # Phase 12E: Modulation param
+    ${FIRMWARE_SRC}/deluge/modulation/params/param.cpp
+    # Phase 12F: Now unlocked by param_set.h compiling through
+    ${FIRMWARE_SRC}/deluge/model/mod_controllable/ModFXProcessor.cpp
 )
 target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
@@ -280,6 +294,13 @@ add_executable(HarnessTests
     tests/util/waves_test.cpp
     tests/playback/playback_mode_test.cpp
     tests/model/consequence_clip_test.cpp
+    # Phase 12
+    tests/dsp/delay_test.cpp
+    tests/dsp/granular_test.cpp
+    tests/hid/encoder_test.cpp
+    tests/modulation/param_test.cpp
+    tests/model/modfx_processor_test.cpp
+    tests/model/leaf_phase12_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

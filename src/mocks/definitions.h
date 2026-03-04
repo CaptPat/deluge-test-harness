@@ -25,3 +25,11 @@ extern void freezeWithError(char const* errmsg);
 #endif
 
 #define FREEZE_WITH_ERROR(error) ({ freezeWithError(error); })
+
+// Phase 12: Forward declarations for types used as pointers in headers
+// that don't include their full definitions (e.g., mod_controllable_audio.h)
+#ifdef __cplusplus
+class ArpeggiatorSettings;
+class UnpatchedParamSet;
+class ParamManagerForTimeline;
+#endif

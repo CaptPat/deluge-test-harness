@@ -1,11 +1,18 @@
 #pragma once
 
 #include "clip_mocks.h"
+#include "model/fx/stutterer.h"
 #include "util/d_string.h"
 
 #include <cstdint>
 
 class Action;
+class ArpeggiatorSettings;
+
+// Phase 12: minimal mock for Song::globalEffectable
+struct MockGlobalEffectable {
+	StutterConfig stutterConfig;
+};
 
 class Song {
 public:
@@ -44,6 +51,9 @@ public:
 		(void)clip;
 		return false;
 	}
+
+	// Phase 12: param.cpp needs globalEffectable.stutterConfig
+	MockGlobalEffectable globalEffectable;
 
 	// Phase 11: clip consequence stubs
 	Clip* currentClip = nullptr;

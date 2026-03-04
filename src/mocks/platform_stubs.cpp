@@ -37,6 +37,12 @@ void neon_fm_kernel(const int32_t*, const int32_t*, int32_t*, int, int32_t, int3
 // Global buffers referenced by firmware utility code
 char miscStringBuffer[256] = {};
 
+// Phase 12: spareRenderingBuffer — used by delay.cpp as temp working space
+#ifndef SSI_TX_BUFFER_NUM_SAMPLES
+#define SSI_TX_BUFFER_NUM_SAMPLES 128
+#endif
+int32_t spareRenderingBuffer[2][SSI_TX_BUFFER_NUM_SAMPLES] = {};
+
 // Phase 8: SampleCluster destructor stub
 // Real destructor references audioFileManager, Cluster::destroy() — too deep to compile.
 #include "model/sample/sample_cluster.h"

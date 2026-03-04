@@ -127,6 +127,33 @@ template <unsigned saturationAmount>
 	return CONG;
 }
 
+// Phase 12: q31_mult — x86 fallback (ARM version uses smmul inline asm)
+[[gnu::always_inline]] inline q31_t q31_mult(q31_t a, q31_t b) {
+	return (int32_t)(((int64_t)a * b) >> 31);
+}
+
+// Phase 12: q31tRescale — x86 fallback
+[[gnu::always_inline]] inline q31_t q31tRescale(q31_t a, uint32_t proportion) {
+	return (int32_t)(((int64_t)a * (int64_t)proportion) >> 32);
+}
+
+// Phase 12: random/getRandom255/sampleTriangleDistribution — used by GranularProcessor
+inline int32_t random(int32_t upperLimit) {
+	return (upperLimit > 0) ? (std::rand() % upperLimit) : 0;
+}
+
+[[gnu::always_inline]] inline uint8_t getRandom255() {
+	return static_cast<uint8_t>(std::rand() & 0xFF);
+}
+
+inline q31_t sampleTriangleDistribution() {
+	int32_t a = static_cast<int32_t>(std::rand()) - (RAND_MAX / 2);
+	int32_t b = static_cast<int32_t>(std::rand()) - (RAND_MAX / 2);
+	return static_cast<q31_t>((static_cast<int64_t>(a) + b) / 2);
+}
+
+bool shouldDoPanning(int32_t panAmount, int32_t* amplitudeL, int32_t* amplitudeR);
+
 // Phase 9: getMagnitudeOld — used by sample_controls.cpp
 [[gnu::always_inline]] inline int32_t getMagnitudeOld(uint32_t input) {
 	return 32 - clz(input);

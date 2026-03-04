@@ -112,6 +112,23 @@ int32_t quickLog(uint32_t input) {
 	return bits << 24;
 }
 
+// Phase 12: shouldDoPanning — used by GranularProcessor
+bool shouldDoPanning(int32_t panAmount, int32_t* amplitudeL, int32_t* amplitudeR) {
+	if (panAmount == 0) {
+		return false;
+	}
+	// Simple linear panning for test purposes
+	if (panAmount > 0) {
+		*amplitudeR = 2147483647;
+		*amplitudeL = 2147483647 - panAmount;
+	}
+	else {
+		*amplitudeL = 2147483647;
+		*amplitudeR = 2147483647 + panAmount;
+	}
+	return true;
+}
+
 // Phase 8: strcmpspecial — natural string comparison with numeric ordering
 // Ported from firmware/src/deluge/util/functions.cpp:1718-1863
 // Global flags control note name interpretation (default: off)

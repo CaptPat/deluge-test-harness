@@ -21,4 +21,7 @@ inline bool mustUpdateReverbParamsBeforeNextRender = false;
 inline void routineWithClusterLoading() {} // Called by NoteRowVector destructor
 inline void logAction(char const*) {}
 inline void logAction(int32_t) {}
+
+// Phase 12: GranularProcessor stubs
+inline void feedReverbBackdoorForGrain(int32_t l, int32_t r) { (void)l; (void)r; }
 } // namespace AudioEngine
