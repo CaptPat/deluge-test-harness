@@ -189,6 +189,13 @@ add_library(deluge_firmware_src STATIC
     # Phase 10B: ModControllable + NamedThingVector
     ${FIRMWARE_SRC}/deluge/model/mod_controllable/mod_controllable.cpp
     ${FIRMWARE_SRC}/deluge/util/container/vector/named_thing_vector.cpp
+    # Phase 11A: Utility/Infrastructure
+    ${FIRMWARE_SRC}/deluge/memory/operators.cpp
+    ${FIRMWARE_SRC}/deluge/playback/mode/playback_mode.cpp
+    # Phase 11B: More Consequence subclasses
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_horizontal_shift.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_length.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_length.cpp
 )
 target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
@@ -269,6 +276,10 @@ add_executable(HarnessTests
     tests/model/consequence_test.cpp
     tests/model/mod_controllable_test.cpp
     tests/util/named_thing_vector_test.cpp
+    # Phase 11
+    tests/util/waves_test.cpp
+    tests/playback/playback_mode_test.cpp
+    tests/model/consequence_clip_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

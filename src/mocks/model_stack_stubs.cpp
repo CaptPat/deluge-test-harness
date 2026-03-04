@@ -3,6 +3,7 @@
 // but must exist to satisfy the linker since model_stack.cpp is not compiled.
 
 #include "model/model_stack.h"
+#include "model/note/note_row.h"
 #include <cstring>
 
 // ── ModelStackWithTimelineCounter ────────────────────────────────────────
@@ -29,6 +30,10 @@ ModelStackWithNoteRow* ModelStackWithNoteRowId::automaticallyAddNoteRowFromId() 
 // ── ModelStackWithNoteRow ────────────────────────────────────────────────
 
 int32_t ModelStackWithNoteRow::getLoopLength() const {
+	NoteRow* nr = getNoteRow();
+	if (nr && nr->loopLengthIfIndependent) {
+		return nr->loopLengthIfIndependent;
+	}
 	return 0;
 }
 

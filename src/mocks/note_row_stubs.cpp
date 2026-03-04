@@ -50,3 +50,17 @@ NoteRow::NoteRow(int16_t newY)
 }
 
 NoteRow::~NoteRow() = default;
+
+// Phase 11: consequence_note_row_length stubs
+bool NoteRow::hasIndependentPlayPos() {
+	return loopLengthIfIndependent != 0;
+}
+
+void NoteRow::setLength(ModelStackWithNoteRow* modelStack, int32_t newLength, Action* actionToRecordTo, int32_t oldPos,
+                        bool hadIndependentPlayPosBefore) {
+	(void)modelStack;
+	(void)actionToRecordTo;
+	(void)oldPos;
+	(void)hadIndependentPlayPosBefore;
+	loopLengthIfIndependent = newLength;
+}

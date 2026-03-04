@@ -1,16 +1,42 @@
 #pragma once
 
 #include "definitions_cxx.hpp"
+#include "model/timeline_counter.h"
 
 #include <cstdint>
+#include <climits>
 #include <vector>
 
-class Clip {
+class Clip : public TimelineCounter {
 public:
 	Clip(int id_ = -1) : id(id_) {}
 	int id;
 	ClipType type = ClipType::INSTRUMENT;
 	bool deleted = false;
+	int32_t loopLength = 0;
+
+	// TimelineCounter pure virtual overrides
+	int32_t getLastProcessedPos() const override { return 0; }
+	uint32_t getLivePos() const override { return 0; }
+	int32_t getLoopLength() const override { return loopLength; }
+	bool isPlayingAutomationNow() const override { return false; }
+	bool backtrackingCouldLoopBackToEnd() const override { return false; }
+	int32_t getPosAtWhichPlaybackWillCut(ModelStackWithTimelineCounter const* ms) const override {
+		(void)ms;
+		return INT32_MAX;
+	}
+	void getActiveModControllable(ModelStackWithTimelineCounter* ms) override { (void)ms; }
+	void expectEvent() override {}
+	TimelineCounter* getTimelineCounterToRecordTo() override { return this; }
+
+	// Phase 11: consequence stubs
+	virtual void shiftHorizontally(ModelStackWithTimelineCounter* ms, int32_t amount, bool shiftAutomation,
+	                               bool shiftSequenceAndMPE) {
+		(void)ms;
+		(void)amount;
+		(void)shiftAutomation;
+		(void)shiftSequenceAndMPE;
+	}
 };
 
 class InstrumentClip : public Clip {};

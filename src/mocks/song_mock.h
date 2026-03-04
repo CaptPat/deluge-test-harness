@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+class Action;
+
 class Song {
 public:
 	void deleteClipObject(Clip* clip, bool x, InstrumentRemoval removal) {
@@ -41,6 +43,15 @@ public:
 	bool isClipActive(Clip* clip) {
 		(void)clip;
 		return false;
+	}
+
+	// Phase 11: clip consequence stubs
+	Clip* currentClip = nullptr;
+	Clip* getCurrentClip() { return currentClip; }
+	void setClipLength(Clip* clip, int32_t length, Action* action) {
+		(void)action;
+		if (clip)
+			clip->loopLength = length;
 	}
 };
 
