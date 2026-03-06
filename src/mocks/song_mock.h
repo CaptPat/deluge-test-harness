@@ -8,6 +8,7 @@
 
 class Action;
 class ArpeggiatorSettings;
+class Output;
 
 // Phase 12: minimal mock for Song::globalEffectable
 struct MockGlobalEffectable {
@@ -54,6 +55,11 @@ public:
 
 	// Phase 12: param.cpp needs globalEffectable.stutterConfig
 	MockGlobalEffectable globalEffectable;
+
+	// Phase 14: Output linked-list stubs for consequence_output_existence
+	Output* firstOutput = nullptr;
+	void addOutput(Output* output, bool atStart = false);
+	int32_t removeOutputFromMainList(Output* output);
 
 	// Phase 11: clip consequence stubs
 	Clip* currentClip = nullptr;

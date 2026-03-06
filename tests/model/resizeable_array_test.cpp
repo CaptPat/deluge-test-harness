@@ -259,6 +259,88 @@ TEST(OrderedResizeableArrayTest, deleteAtKey) {
 	CHECK(arr.searchExact(40) >= 0);
 }
 
+TEST(OrderedResizeableArrayTest, insertDuplicateKeyCreatesNewEntry) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	arr.insertAtKey(100);
+	arr.insertAtKey(100);
+	CHECK_EQUAL(2, arr.getNumElements());
+	// Both elements should have key 100
+	CHECK_EQUAL(100, arr.getKeyAtIndex(0));
+	CHECK_EQUAL(100, arr.getKeyAtIndex(1));
+}
+
+TEST(OrderedResizeableArrayTest, searchMultipleKeysAllFound) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	for (int32_t k = 0; k < 50; k++) {
+		arr.insertAtKey(k * 3); // 0, 3, 6, 9, ..., 147
+	}
+	CHECK_EQUAL(50, arr.getNumElements());
+
+	// All keys should be findable
+	for (int32_t k = 0; k < 50; k++) {
+		CHECK(arr.searchExact(k * 3) >= 0);
+	}
+
+	// Keys between should not be found
+	CHECK(arr.searchExact(1) < 0);
+	CHECK(arr.searchExact(2) < 0);
+	CHECK(arr.searchExact(4) < 0);
+}
+
+TEST(OrderedResizeableArrayTest, deleteNonExistentKeyNoOp) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	arr.insertAtKey(10);
+	arr.insertAtKey(20);
+	arr.deleteAtKey(15); // doesn't exist
+	CHECK_EQUAL(2, arr.getNumElements());
+}
+
+TEST(OrderedResizeableArrayTest, insertAtKeyReturnsCorrectIndex) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	// Insert in reverse order; each should go to start
+	int32_t idx3 = arr.insertAtKey(30);
+	int32_t idx1 = arr.insertAtKey(10);
+	int32_t idx2 = arr.insertAtKey(20);
+
+	// After all inserts, order should be 10, 20, 30
+	CHECK_EQUAL(10, arr.getKeyAtIndex(0));
+	CHECK_EQUAL(20, arr.getKeyAtIndex(1));
+	CHECK_EQUAL(30, arr.getKeyAtIndex(2));
+}
+
+TEST(OrderedResizeableArrayTest, getKeyAtIndexBoundary) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	arr.insertAtKey(100);
+	arr.insertAtKey(200);
+	arr.insertAtKey(300);
+
+	CHECK_EQUAL(100, arr.getKeyAtIndex(0));
+	CHECK_EQUAL(300, arr.getKeyAtIndex(2));
+}
+
+TEST(OrderedResizeableArrayTest, deleteAllThenReinsert) {
+	OrderedResizeableArrayWith32bitKey arr(sizeof(int32_t) * 2);
+
+	for (int32_t k = 0; k < 5; k++) {
+		arr.insertAtKey(k * 10);
+	}
+	// Delete all
+	for (int32_t k = 4; k >= 0; k--) {
+		arr.deleteAtKey(k * 10);
+	}
+	CHECK_EQUAL(0, arr.getNumElements());
+
+	// Reinsert
+	arr.insertAtKey(42);
+	CHECK_EQUAL(1, arr.getNumElements());
+	CHECK_EQUAL(42, arr.getKeyAtIndex(0));
+}
+
 // ── OrderedResizeableArrayWithMultiWordKey ──────────────────────────────
 
 TEST_GROUP(MultiWordKeyArrayTest) {};

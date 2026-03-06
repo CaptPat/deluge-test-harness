@@ -158,3 +158,126 @@ TEST(EnvelopeTest, noteOff) {
 	env.noteOff(0, &sound, pm);
 	CHECK_STATE(EnvelopeStage::RELEASE, env.state);
 }
+
+// ── Full ADSR lifecycle tests ──────────────────────────────────────────
+
+TEST(EnvelopeTest, fullADSRLifecycle) {
+	Envelope env;
+
+	// Attack
+	env.noteOn(false);
+	CHECK_STATE(EnvelopeStage::ATTACK, env.state);
+
+	// Render through attack phase into decay
+	uint32_t attack = 500000; // moderate attack
+	uint32_t decay = 500;
+	uint32_t sustain = 1073741824u; // half sustain
+	uint32_t release = 500;
+
+	// Run attack until we transition to decay
+	int maxIter = 100;
+	while (env.state == EnvelopeStage::ATTACK && maxIter-- > 0) {
+		env.render(128, attack, decay, sustain, release, decayTableSmall8);
+	}
+	CHECK_STATE(EnvelopeStage::DECAY, env.state);
+	CHECK(env.lastValue > 0); // should be near peak
+
+	// Run decay until sustain
+	maxIter = 1000;
+	while (env.state == EnvelopeStage::DECAY && maxIter-- > 0) {
+		env.render(128, attack, decay, sustain, release, decayTableSmall8);
+	}
+	CHECK_STATE(EnvelopeStage::SUSTAIN, env.state);
+
+	// Value should be near sustain level
+	int32_t sustainValue = env.lastValue;
+	CHECK(sustainValue > 0);
+
+	// Release
+	env.unconditionalRelease();
+	CHECK_STATE(EnvelopeStage::RELEASE, env.state);
+
+	// Run until OFF
+	maxIter = 1000;
+	int32_t ret = 0;
+	while (env.state == EnvelopeStage::RELEASE && maxIter-- > 0) {
+		ret = env.render(128, attack, decay, sustain, release, decayTableSmall8);
+	}
+	CHECK_STATE(EnvelopeStage::OFF, env.state);
+	CHECK_EQUAL((int32_t)-2147483648, ret); // OFF sentinel
+}
+
+TEST(EnvelopeTest, attackValueMonotonicallyIncreases) {
+	Envelope env;
+	env.noteOn(false);
+
+	int32_t prev = env.lastValue;
+	for (int i = 0; i < 20 && env.state == EnvelopeStage::ATTACK; i++) {
+		env.render(1, 100000, 500, 1073741824u, 500, decayTableSmall8);
+		CHECK(env.lastValue >= prev);
+		prev = env.lastValue;
+	}
+}
+
+TEST(EnvelopeTest, decayValueMonotonicallyDecreases) {
+	Envelope env;
+	env.noteOn(true); // direct to decay, starts at INT32_MAX
+
+	int32_t prev = env.lastValue;
+	for (int i = 0; i < 20 && env.state == EnvelopeStage::DECAY; i++) {
+		env.render(10, 0, 100, 1073741824u, 0, decayTableSmall8);
+		CHECK(env.lastValue <= prev);
+		prev = env.lastValue;
+	}
+}
+
+TEST(EnvelopeTest, sustainHoldsLevel) {
+	Envelope env;
+	env.noteOn(true); // direct to decay
+	uint32_t sustain = 1073741824u;
+
+	// Drive into sustain
+	int maxIter = 1000;
+	while (env.state == EnvelopeStage::DECAY && maxIter-- > 0) {
+		env.render(128, 0, 500, sustain, 500, decayTableSmall8);
+	}
+	CHECK_STATE(EnvelopeStage::SUSTAIN, env.state);
+
+	// In sustain, value should remain stable
+	int32_t sustainVal = env.lastValue;
+	for (int i = 0; i < 10; i++) {
+		env.render(128, 0, 500, sustain, 500, decayTableSmall8);
+		CHECK_STATE(EnvelopeStage::SUSTAIN, env.state);
+	}
+	// Value should not have changed much
+	int32_t diff = std::abs(env.lastValue - sustainVal);
+	CHECK(diff < sustainVal / 10); // within 10%
+}
+
+TEST(EnvelopeTest, fastReleaseIsFasterThanNormalRelease) {
+	// Normal release
+	Envelope envNormal;
+	envNormal.noteOn(true);
+	envNormal.render(1, 0, 8388609, 1073741824u, 0, decayTableSmall8); // to sustain
+	envNormal.unconditionalRelease();
+
+	int normalSteps = 0;
+	while (envNormal.state == EnvelopeStage::RELEASE && normalSteps < 1000) {
+		envNormal.render(128, 0, 0, 0, 100, decayTableSmall8);
+		normalSteps++;
+	}
+
+	// Fast release
+	Envelope envFast;
+	envFast.noteOn(true);
+	envFast.render(1, 0, 8388609, 1073741824u, 0, decayTableSmall8); // to sustain
+	envFast.unconditionalRelease(EnvelopeStage::FAST_RELEASE, 65536);
+
+	int fastSteps = 0;
+	while (envFast.state == EnvelopeStage::FAST_RELEASE && fastSteps < 1000) {
+		envFast.render(128, 0, 0, 0, 100, decayTableSmall8);
+		fastSteps++;
+	}
+
+	CHECK(fastSteps <= normalSteps);
+}

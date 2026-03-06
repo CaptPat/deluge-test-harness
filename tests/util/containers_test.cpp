@@ -111,6 +111,86 @@ TEST(BDLinkedList, removeOnlyNode) {
 	CHECK_EQUAL(0, list.getNum());
 }
 
+TEST(BDLinkedList, insertOtherNodeBefore) {
+	BidirectionalLinkedList list;
+	TestNode a(1), b(2), c(3);
+	list.addToEnd(&a);
+	list.addToEnd(&c);
+	c.insertOtherNodeBefore(&b); // b goes before c
+
+	auto* n = list.getFirst();
+	CHECK_EQUAL(1, static_cast<TestNode*>(n)->value);
+	n = list.getNext(n);
+	CHECK_EQUAL(2, static_cast<TestNode*>(n)->value);
+	n = list.getNext(n);
+	CHECK_EQUAL(3, static_cast<TestNode*>(n)->value);
+	CHECK_EQUAL(3, list.getNum());
+}
+
+TEST(BDLinkedList, insertOtherNodeBeforeFirst) {
+	BidirectionalLinkedList list;
+	TestNode a(1), b(2);
+	list.addToEnd(&b);
+	b.insertOtherNodeBefore(&a); // a goes before b (new first)
+
+	POINTERS_EQUAL(&a, list.getFirst());
+	CHECK_EQUAL(1, static_cast<TestNode*>(list.getFirst())->value);
+	CHECK_EQUAL(2, list.getNum());
+}
+
+TEST(BDLinkedList, isLastTrue) {
+	BidirectionalLinkedList list;
+	TestNode a(1);
+	list.addToEnd(&a);
+	CHECK(a.isLast());
+}
+
+TEST(BDLinkedList, isLastFalse) {
+	BidirectionalLinkedList list;
+	TestNode a(1), b(2);
+	list.addToEnd(&a);
+	list.addToEnd(&b);
+	CHECK(!a.isLast());
+	CHECK(b.isLast());
+}
+
+TEST(BDLinkedList, destructorRemovesFromList) {
+	BidirectionalLinkedList list;
+	TestNode a(1);
+	{
+		TestNode b(2);
+		list.addToEnd(&a);
+		list.addToEnd(&b);
+		CHECK_EQUAL(2, list.getNum());
+	} // b destroyed here, should auto-remove
+	CHECK_EQUAL(1, list.getNum());
+	POINTERS_EQUAL(&a, list.getFirst());
+	CHECK(list.getNext(&a) == nullptr);
+}
+
+TEST(BDLinkedList, removeNotInListIsNoop) {
+	TestNode a(1);
+	a.remove(); // Should not crash — node not in any list
+	CHECK(a.list == nullptr);
+}
+
+TEST(BDLinkedList, addToEndPreservesOrder) {
+	BidirectionalLinkedList list;
+	TestNode nodes[5] = {{10}, {20}, {30}, {40}, {50}};
+	for (auto& n : nodes) {
+		list.addToEnd(&n);
+	}
+	CHECK_EQUAL(5, list.getNum());
+
+	auto* cur = list.getFirst();
+	for (int i = 0; i < 5; i++) {
+		CHECK(cur != nullptr);
+		CHECK_EQUAL((i + 1) * 10, static_cast<TestNode*>(cur)->value);
+		cur = list.getNext(cur);
+	}
+	CHECK(cur == nullptr);
+}
+
 // ── QuickSorter ─────────────────────────────────────────────────────────
 // NOTE: QuickSorter uses (uint32_t)memory pointer arithmetic which truncates
 // 64-bit pointers, causing segfaults. Cannot test on x86-64.

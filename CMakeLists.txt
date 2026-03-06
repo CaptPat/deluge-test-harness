@@ -65,6 +65,8 @@ add_library(deluge_mocks STATIC
     src/mocks/playback/playback_handler.cpp
     # Phase 5 stubs
     src/mocks/cfunctions_stubs.cpp
+    # Phase 14 stubs
+    src/mocks/clip_instance_stubs.cpp
 )
 target_include_directories(deluge_mocks PUBLIC
     src/mocks
@@ -210,6 +212,10 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/modulation/params/param.cpp
     # Phase 12F: Now unlocked by param_set.h compiling through
     ${FIRMWARE_SRC}/deluge/model/mod_controllable/ModFXProcessor.cpp
+    # Phase 14A: Clip instance consequences (Output shadow unlocks instrument.h)
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_change.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_existence.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_output_existence.cpp
 )
 target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
@@ -301,6 +307,15 @@ add_executable(HarnessTests
     tests/modulation/param_test.cpp
     tests/model/modfx_processor_test.cpp
     tests/model/leaf_phase12_test.cpp
+    # Phase 14: Clip instance consequences + iterance
+    tests/model/consequence_clip_instance_test.cpp
+    tests/model/iterance_test.cpp
+    # Phase 14: Value scaling tests
+    tests/gui/value_scaling_test.cpp
+    # Phase 13: Smoke tests — lifecycle & scenario coverage
+    tests/dsp/delay_smoke_test.cpp
+    tests/dsp/granular_smoke_test.cpp
+    tests/dsp/filter_set_smoke_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

@@ -13,4 +13,5 @@ namespace FlashStorage {
 extern bool defaultUseSharps;
 extern Polarity defaultPatchCablePolarity;
 extern int8_t defaultMagnitude;
+inline constexpr uint8_t defaultVelocity = 64;
 } // namespace FlashStorage
