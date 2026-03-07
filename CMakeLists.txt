@@ -341,6 +341,12 @@ add_executable(HarnessTests
     tests/model/consequence_clip_multiply_test.cpp
     tests/model/consequence_perf_view_test.cpp
     tests/storage/dx7_cartridge_test.cpp
+    # Phase 17: Coverage gap tests
+    tests/modulation/param_roundtrip_test.cpp
+    tests/model/note_edge_case_test.cpp
+    tests/util/c_string_array_edge_test.cpp
+    tests/dsp/filter_resonance_extreme_test.cpp
+    tests/storage/dx7_algorithm_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
