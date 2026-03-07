@@ -178,8 +178,8 @@ TEST(GranularSmokeTest, bufferStolenSetsNullButNotWraps) {
 	}
 
 	proc.grainBufferStolen();
-	// wrapsToShutdown is NOT cleared — this documents the bug
-	CHECK(proc.getSamplesToShutdown() > 0);
+	// After fix (#4357), grainBufferStolen() now resets wrapsToShutdown
+	CHECK_EQUAL(0, proc.getSamplesToShutdown());
 }
 
 // --- No sound coming in → should still process grains from buffer ---
