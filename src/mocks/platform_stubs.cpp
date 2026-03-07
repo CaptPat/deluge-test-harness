@@ -43,6 +43,20 @@ char miscStringBuffer[256] = {};
 #endif
 int32_t spareRenderingBuffer[2][SSI_TX_BUFFER_NUM_SAMPLES] = {};
 
+// Phase 16: PerformanceView global for consequence_performance_view_press
+#include "gui/views/performance_view.h"
+PerformanceView performanceView{};
+
+// Phase 16: Session global and defaultClipSectionColours for clip_instance.cpp
+#include "playback/mode/session.h"
+Session session;
+const RGB defaultClipSectionColours[] = {
+    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
+    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
+    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
+    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
+};
+
 // Phase 8: SampleCluster destructor stub
 // Real destructor references audioFileManager, Cluster::destroy() — too deep to compile.
 #include "model/sample/sample_cluster.h"

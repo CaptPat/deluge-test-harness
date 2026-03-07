@@ -18,6 +18,12 @@ public:
 	ClipType type = ClipType::INSTRUMENT;
 	bool deleted = false;
 	int32_t loopLength = 0;
+	uint8_t section = 0;
+	bool soloingInSessionMode = false;
+	bool activeIfNoSolo = false;
+	ArmState armState = ArmState::OFF;
+
+	bool isArrangementOnlyClip() { return false; }
 
 	// TimelineCounter pure virtual overrides
 	int32_t getLastProcessedPos() const override { return 0; }
@@ -43,6 +49,8 @@ public:
 	}
 };
 
+class ModelStackWithTimelineCounter;
+
 class InstrumentClip : public Clip {
 public:
 	// Map from noteRowId to NoteRow* for consequence tests
@@ -61,10 +69,17 @@ public:
 		lastShiftSequenceAndMPE = shiftSequenceAndMPE;
 	}
 
+	// Phase 16: consequence_instrument_clip_multiply support
+	void halveNoteRowsWithIndependentLength(ModelStackWithTimelineCounter* modelStack) {
+		(void)modelStack;
+		halveNoteRowsCalled = true;
+	}
+
 	// Test inspection
 	int32_t lastShiftAmount = 0;
 	bool lastShiftAutomation = false;
 	bool lastShiftSequenceAndMPE = false;
+	bool halveNoteRowsCalled = false;
 };
 
 class AudioClip : public Clip {};

@@ -41,7 +41,10 @@ enum class ActionType {
 	NOTEROW_HORIZONTAL_SHIFT,
 };
 
+class Consequence;
+
 class Action {
 public:
 	Action() = default;
+	void addConsequence(Consequence* consequence) { (void)consequence; }
 };

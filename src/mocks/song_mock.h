@@ -64,10 +64,16 @@ public:
 	// Phase 11: clip consequence stubs
 	Clip* currentClip = nullptr;
 	Clip* getCurrentClip() { return currentClip; }
+	void setCurrentClip(Clip* clip) { currentClip = clip; }
 	void setClipLength(Clip* clip, int32_t length, Action* action) {
 		(void)action;
 		if (clip)
 			clip->loopLength = length;
+	}
+	void doubleClipLength(Clip* clip, Action* action = nullptr) {
+		(void)action;
+		if (clip)
+			clip->loopLength *= 2;
 	}
 };
 

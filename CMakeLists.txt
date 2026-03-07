@@ -66,7 +66,7 @@ add_library(deluge_mocks STATIC
     # Phase 5 stubs
     src/mocks/cfunctions_stubs.cpp
     # Phase 14 stubs
-    src/mocks/clip_instance_stubs.cpp
+    # clip_instance_stubs.cpp removed — replaced by real clip_instance.cpp in Phase 16
     # Phase 15 stubs
     src/mocks/storage/audio_file_stubs.cpp
 )
@@ -228,6 +228,12 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_existence.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_horizontal_shift.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_mute.cpp
+    # Phase 16: clip_instance (real), consequence_instrument_clip_multiply,
+    #           consequence_performance_view_press, DX7Cartridge
+    ${FIRMWARE_SRC}/deluge/model/clip/clip_instance.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_instrument_clip_multiply.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_performance_view_press.cpp
+    ${FIRMWARE_SRC}/deluge/storage/DX7Cartridge.cpp
 )
 target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
@@ -331,6 +337,10 @@ add_executable(HarnessTests
     # Phase 15: Storage multi-range + note consequences
     tests/storage/multi_range_test.cpp
     tests/model/consequence_note_test.cpp
+    # Phase 16: clip_instance, clip_multiply, performance_view_press, DX7Cartridge
+    tests/model/consequence_clip_multiply_test.cpp
+    tests/model/consequence_perf_view_test.cpp
+    tests/storage/dx7_cartridge_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
