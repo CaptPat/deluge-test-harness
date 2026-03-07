@@ -289,6 +289,21 @@ TEST(ParamRoundTripUnpatchedSound, portamento) {
 	checkRoundTrip(params::Kind::UNPATCHED_SOUND, param, "portamento");
 }
 
+TEST(ParamRoundTripUnpatchedSound, sustainPedal) {
+	int32_t param = params::UNPATCHED_SUSTAIN_PEDAL + params::UNPATCHED_START;
+	checkRoundTrip(params::Kind::UNPATCHED_SOUND, param, "sustainPedal");
+}
+
+TEST(ParamRoundTripUnpatchedSound, sostenutoPedal) {
+	int32_t param = params::UNPATCHED_SOSTENUTO_PEDAL + params::UNPATCHED_START;
+	checkRoundTrip(params::Kind::UNPATCHED_SOUND, param, "sostenutoPedal");
+}
+
+TEST(ParamRoundTripUnpatchedSound, softPedal) {
+	int32_t param = params::UNPATCHED_SOFT_PEDAL + params::UNPATCHED_START;
+	checkRoundTrip(params::Kind::UNPATCHED_SOUND, param, "softPedal");
+}
+
 // ── Unpatched global-only params ────────────────────────────────────────────
 
 TEST_GROUP(ParamRoundTripUnpatchedGlobal) {};

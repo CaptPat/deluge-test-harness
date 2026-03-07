@@ -347,6 +347,8 @@ add_executable(HarnessTests
     tests/util/c_string_array_edge_test.cpp
     tests/dsp/filter_resonance_extreme_test.cpp
     tests/storage/dx7_algorithm_test.cpp
+    # Phase 18: all-fixes branch coverage
+    tests/model/time_signature_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

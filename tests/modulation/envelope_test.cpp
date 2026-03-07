@@ -281,3 +281,38 @@ TEST(EnvelopeTest, fastReleaseIsFasterThanNormalRelease) {
 
 	CHECK(fastSteps <= normalSteps);
 }
+
+// ── Sustain-zero clamp (bug fix validation) ──────────────────────────
+
+TEST(EnvelopeTest, sustainZeroDoesNotGoNegative) {
+	// Bug: when sustain=0, smoothedSustain could go negative due to
+	// the smoothing formula: add_saturate(smoothedSustain, n * ((0 - smoothedSustain) >> 9))
+	// Fix: clamp smoothedSustain to >= 0 after smoothing
+	Envelope env;
+	env.noteOn(true); // direct to decay, lastValue = INT32_MAX
+
+	// Drive through decay into sustain with sustain=0
+	int maxIter = 1000;
+	while (env.state == EnvelopeStage::DECAY && maxIter-- > 0) {
+		env.render(128, 0, 500, 0, 500, decayTableSmall8);
+	}
+	CHECK_STATE(EnvelopeStage::SUSTAIN, env.state);
+
+	// Render many blocks at sustain=0 — lastValue must never go negative
+	for (int i = 0; i < 100; i++) {
+		env.render(128, 0, 500, 0, 500, decayTableSmall8);
+		CHECK(env.lastValue >= 0);
+	}
+}
+
+TEST(EnvelopeTest, decayWithZeroSustainStaysNonNegative) {
+	// Even during the decay phase with sustain=0, smoothedSustain should
+	// be clamped so lastValue doesn't underflow
+	Envelope env;
+	env.noteOn(true);
+
+	for (int i = 0; i < 200; i++) {
+		env.render(128, 0, 100, 0, 500, decayTableSmall8);
+		CHECK(env.lastValue >= 0);
+	}
+}
