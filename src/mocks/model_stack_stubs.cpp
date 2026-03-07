@@ -4,6 +4,7 @@
 
 #include "model/model_stack.h"
 #include "model/note/note_row.h"
+#include "clip_mocks.h"
 #include <cstring>
 
 // ── ModelStackWithTimelineCounter ────────────────────────────────────────
@@ -23,7 +24,13 @@ ModelStackWithTimelineCounter::addNoteRowAndExtraStuff(int32_t noteRowIndex, Not
 
 ModelStackWithNoteRow* ModelStackWithNoteRowId::automaticallyAddNoteRowFromId() const {
 	auto* toReturn = (ModelStackWithNoteRow*)this;
-	toReturn->setNoteRow(nullptr);
+	NoteRow* nr = nullptr;
+	// Phase 15: try to look up NoteRow from InstrumentClip mock
+	if (auto* tc = getTimelineCounterAllowNull()) {
+		auto* ic = static_cast<InstrumentClip*>(tc);
+		nr = ic->getNoteRowFromId(noteRowId);
+	}
+	toReturn->setNoteRow(nr);
 	return toReturn;
 }
 

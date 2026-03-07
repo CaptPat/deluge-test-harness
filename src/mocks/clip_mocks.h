@@ -6,6 +6,10 @@
 #include <cstdint>
 #include <climits>
 #include <vector>
+#include <map>
+
+class NoteRow;
+class ModelStackWithNoteRow;
 
 class Clip : public TimelineCounter {
 public:
@@ -39,7 +43,29 @@ public:
 	}
 };
 
-class InstrumentClip : public Clip {};
+class InstrumentClip : public Clip {
+public:
+	// Map from noteRowId to NoteRow* for consequence tests
+	std::map<int32_t, NoteRow*> noteRowMap;
+
+	NoteRow* getNoteRowFromId(int32_t id) {
+		auto it = noteRowMap.find(id);
+		return (it != noteRowMap.end()) ? it->second : nullptr;
+	}
+
+	void shiftOnlyOneNoteRowHorizontally(ModelStackWithNoteRow* modelStack, int32_t shiftAmount,
+	                                     bool shiftAutomation, bool shiftSequenceAndMPE) {
+		(void)modelStack;
+		lastShiftAmount = shiftAmount;
+		lastShiftAutomation = shiftAutomation;
+		lastShiftSequenceAndMPE = shiftSequenceAndMPE;
+	}
+
+	// Test inspection
+	int32_t lastShiftAmount = 0;
+	bool lastShiftAutomation = false;
+	bool lastShiftSequenceAndMPE = false;
+};
 
 class AudioClip : public Clip {};
 

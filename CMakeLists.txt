@@ -67,6 +67,8 @@ add_library(deluge_mocks STATIC
     src/mocks/cfunctions_stubs.cpp
     # Phase 14 stubs
     src/mocks/clip_instance_stubs.cpp
+    # Phase 15 stubs
+    src/mocks/storage/audio_file_stubs.cpp
 )
 target_include_directories(deluge_mocks PUBLIC
     src/mocks
@@ -216,6 +218,16 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_change.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_existence.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_output_existence.cpp
+    # Phase 15A: Storage multi-range + wave_table chain
+    ${FIRMWARE_SRC}/deluge/storage/wave_table/wave_table_holder.cpp
+    ${FIRMWARE_SRC}/deluge/storage/multi_range/multi_wave_table_range.cpp
+    ${FIRMWARE_SRC}/deluge/storage/multi_range/multisample_range.cpp
+    ${FIRMWARE_SRC}/deluge/storage/multi_range/multi_range_array.cpp
+    # Phase 15B: Note-level consequence subclasses
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_array_change.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_existence.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_horizontal_shift.cpp
+    ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_mute.cpp
 )
 target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
@@ -316,6 +328,9 @@ add_executable(HarnessTests
     tests/dsp/delay_smoke_test.cpp
     tests/dsp/granular_smoke_test.cpp
     tests/dsp/filter_set_smoke_test.cpp
+    # Phase 15: Storage multi-range + note consequences
+    tests/storage/multi_range_test.cpp
+    tests/model/consequence_note_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

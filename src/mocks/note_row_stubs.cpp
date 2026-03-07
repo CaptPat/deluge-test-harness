@@ -64,3 +64,10 @@ void NoteRow::setLength(ModelStackWithNoteRow* modelStack, int32_t newLength, Ac
 	(void)hadIndependentPlayPosBefore;
 	loopLengthIfIndependent = newLength;
 }
+
+// Phase 15: consequence_note_row_mute stub
+void NoteRow::toggleMute(ModelStackWithNoteRow* modelStack, bool clipIsActiveAndPlaybackIsOn) {
+	(void)modelStack;
+	(void)clipIsActiveAndPlaybackIsOn;
+	muted = !muted;
+}

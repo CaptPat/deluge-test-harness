@@ -127,6 +127,15 @@ template <unsigned saturationAmount>
 	return CONG;
 }
 
+// Phase 15: swapEndianness — x86 fallback (ARM uses rev/rev16 instructions)
+[[gnu::always_inline]] inline uint32_t swapEndianness32(uint32_t input) {
+	return ((input >> 24) & 0xFF) | ((input >> 8) & 0xFF00) | ((input << 8) & 0xFF0000) | ((input << 24) & 0xFF000000);
+}
+
+[[gnu::always_inline]] inline uint32_t swapEndianness2x16(uint32_t input) {
+	return ((input >> 8) & 0x00FF00FF) | ((input << 8) & 0xFF00FF00);
+}
+
 // Phase 12: q31_mult — x86 fallback (ARM version uses smmul inline asm)
 [[gnu::always_inline]] inline q31_t q31_mult(q31_t a, q31_t b) {
 	return (int32_t)(((int64_t)a * b) >> 31);
