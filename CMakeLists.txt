@@ -357,6 +357,11 @@ add_executable(HarnessTests
     tests/util/browser_search_test.cpp
     tests/modulation/filter_morph_label_test.cpp
     tests/model/pedal_state_test.cpp
+    # Mirrors of upstream-only tests
+    tests/util/const_functions_test.cpp
+    tests/util/clock_type_test.cpp
+    # Meta: upstream overlap detection
+    tests/meta/upstream_overlap_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
