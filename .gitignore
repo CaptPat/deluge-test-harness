@@ -1,5 +1,7 @@
 build/
 build_*/
+build-coverage/
+coverage/
 .cache/
 CMakeUserPresets.json
 compile_commands.json

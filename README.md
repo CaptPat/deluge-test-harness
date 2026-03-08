@@ -9,8 +9,9 @@ This harness tests **our contributed PRs** against the upstream firmware. It is 
 **What's tested:**
 - Pure logic: tick scaling, time signatures, search algorithms, float round-trips, bitfield enums, filter classification
 - Data structures: note vectors, param collections, patch cables, MIDI containers, clip iterators
-- DSP smoke tests: granular processor, filters, reverb, delay (parameter sweeps, no crash verification)
-- Model layer: consequences, clip instances, scales, envelopes, ModFX
+- DSP smoke tests: granular processor, filters, reverb, delay (parameter sweeps, sync branches, no crash verification)
+- Model layer: consequences, clip instances, scales, envelopes, ModFX, chords, presets
+- Monte Carlo stress tests: real Q31 parameter values from community presets through ModFX/delay/reverb paths
 
 **What's NOT tested (and why):**
 - UI/button interactions (need full view dispatch + hardware mocks we don't have)
@@ -25,7 +26,7 @@ This harness tests **our contributed PRs** against the upstream firmware. It is 
 ## Architecture
 
 ```
-tests/                    Test files (CppUTest, 1152 tests)
+tests/                    Test files (CppUTest, 1308 tests)
 src/harness/              TestFixture — high-level test DSL
 src/mocks/                Hardware mock layer + shadow headers
 firmware/                 Git submodule → DelugeFirmware (testing/all-fixes branch)

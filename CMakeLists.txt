@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_C_STANDARD 23)
 
+# ── Coverage (gcov) ──────────────────────────────────────────────────────
+option(COVERAGE "Enable gcov coverage instrumentation" OFF)
+if (COVERAGE)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+endif ()
+
 # Path to the firmware submodule
 set(FIRMWARE_DIR ${CMAKE_SOURCE_DIR}/firmware)
 set(FIRMWARE_SRC ${FIRMWARE_DIR}/src)
@@ -69,6 +76,8 @@ add_library(deluge_mocks STATIC
     # clip_instance_stubs.cpp removed — replaced by real clip_instance.cpp in Phase 16
     # Phase 15 stubs
     src/mocks/storage/audio_file_stubs.cpp
+    # Phase C stubs
+    src/mocks/param_set_stubs.cpp
 )
 target_include_directories(deluge_mocks PUBLIC
     src/mocks
@@ -360,6 +369,14 @@ add_executable(HarnessTests
     # Mirrors of upstream-only tests
     tests/util/const_functions_test.cpp
     tests/util/clock_type_test.cpp
+    # Phase C: coverage gap tests
+    tests/model/preset_scales_test.cpp
+    tests/model/modfx_render_test.cpp
+    tests/dsp/reverb_base_test.cpp
+    tests/dsp/granular_render_test.cpp
+    # Phase C2: delay sync + preset Monte Carlo stress tests
+    tests/dsp/delay_sync_test.cpp
+    tests/dsp/preset_values_stress_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )
