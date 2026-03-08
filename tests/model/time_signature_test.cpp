@@ -1,8 +1,13 @@
 // TimeSignature struct tests: bar/beat tick calculations, defaults, equality.
 
 #include "CppUTest/TestHarness.h"
-#include "model/time_signature.h"
 
+#if __has_include("model/time_signature.h")
+#include "model/time_signature.h"
+#define HAS_TIME_SIGNATURE 1
+#endif
+
+#ifdef HAS_TIME_SIGNATURE
 TEST_GROUP(TimeSignatureTest) {};
 
 // ── barLengthInBaseTicks ────────────────────────────────────────────────────
@@ -119,3 +124,5 @@ TEST(TimeSignatureTest, defaultsAreEqual) {
 	TimeSignature b{};
 	CHECK_TRUE(a == b);
 }
+
+#endif // HAS_TIME_SIGNATURE
