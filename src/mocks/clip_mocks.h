@@ -19,6 +19,27 @@ public:
 	bool deleted = false;
 	int32_t loopLength = 0;
 	uint8_t section = 0;
+	uint16_t tempoRatioNumerator{1};
+	uint16_t tempoRatioDenominator{1};
+	int32_t tempoRatioAccumulator{0};
+	[[nodiscard]] bool hasTempoRatio() const { return tempoRatioNumerator != tempoRatioDenominator; }
+	int32_t scaleGlobalToClipTicks(int32_t globalTicks) {
+		if (tempoRatioNumerator == tempoRatioDenominator) {
+			return globalTicks;
+		}
+		bool neg = (globalTicks < 0);
+		int32_t absTicks = neg ? -globalTicks : globalTicks;
+		int32_t total = absTicks * tempoRatioNumerator + tempoRatioAccumulator;
+		int32_t result = total / tempoRatioDenominator;
+		tempoRatioAccumulator = total % tempoRatioDenominator;
+		return neg ? -result : result;
+	}
+	[[nodiscard]] int32_t clipTicksToGlobalTicks(int32_t clipTicks) const {
+		if (tempoRatioNumerator == tempoRatioDenominator) {
+			return clipTicks;
+		}
+		return (clipTicks * tempoRatioDenominator + tempoRatioNumerator - 1) / tempoRatioNumerator;
+	}
 	bool soloingInSessionMode = false;
 	bool activeIfNoSolo = false;
 	ArmState armState = ArmState::OFF;
