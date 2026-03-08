@@ -355,6 +355,8 @@ add_executable(HarnessTests
     tests/dsp/granular_destructor_test.cpp
     tests/playback/midi_transport_toggle_test.cpp
     tests/util/browser_search_test.cpp
+    tests/modulation/filter_morph_label_test.cpp
+    tests/model/pedal_state_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
