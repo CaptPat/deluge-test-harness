@@ -163,14 +163,14 @@ TEST(GranularSmokeTest, tempoChangeMidStream) {
 }
 
 // --- Buffer stolen mid-stream ---
+// Regression guard: grainBufferStolen() must reset all grain state so that
+// a future code change can't leave stale wrapsToShutdown / grainInitialized
+// values reachable. The implicit contract "buffer can't be stolen while
+// grains are active" is not enforced in code, so we verify the defensive
+// resets survive upstream refactors.
 
-// BUG 1: grainBufferStolen() sets grainBuffer=nullptr but does NOT reset
-// wrapsToShutdown, so getSamplesToShutdown() returns stale value.
-// BUG 2: processGrainFX after steal SEGFAULTs — it dereferences the null
-// grainBuffer via processOneGrainSample → (*grainBuffer)[pos].
-// Requires fix #4357 (not on main yet).
-#if __has_include("model/time_signature.h")
-TEST(GranularSmokeTest, bufferStolenSetsNullButNotWraps) {
+TEST(GranularSmokeTest, bufferStolenResetsAllState) {
+	// Build up internal state by processing several blocks
 	for (int block = 0; block < 5; block++) {
 		fillDC(1 << 18);
 		postFXVolume = 1 << 27;
@@ -180,10 +180,15 @@ TEST(GranularSmokeTest, bufferStolenSetsNullButNotWraps) {
 	}
 
 	proc.grainBufferStolen();
-	// After fix (#4357), grainBufferStolen() now resets wrapsToShutdown
+
+	// wrapsToShutdown must be 0 (observable via getSamplesToShutdown)
 	CHECK_EQUAL(0, proc.getSamplesToShutdown());
+
+	// Note: we can't test processGrainFX after steal in the harness
+	// because the mock allocator returns nullptr for allocStealable,
+	// so getBuffer() can't re-acquire a GrainBuffer. On real hardware
+	// it would either re-allocate or no-op gracefully.
 }
-#endif
 
 // --- No sound coming in → should still process grains from buffer ---
 

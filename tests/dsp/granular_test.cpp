@@ -27,8 +27,10 @@ TEST(GranularProcessorTest, startSkippingRendering) {
 	CHECK_EQUAL(0, proc.getSamplesToShutdown());
 }
 
-TEST(GranularProcessorTest, grainBufferStolen) {
-	// grainBufferStolen sets internal grainBuffer to nullptr
+TEST(GranularProcessorTest, grainBufferStolenResetsWraps) {
+	// grainBufferStolen must reset wrapsToShutdown (and other state).
+	// This is a regression guard — the implicit invariant "buffer can't
+	// be stolen while grains are active" is not enforced in code.
 	proc.grainBufferStolen();
 	CHECK_EQUAL(0, proc.getSamplesToShutdown());
 }
