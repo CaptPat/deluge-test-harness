@@ -11,9 +11,15 @@
 #define MIDI_MESSAGE_NOTE 1
 #define MIDI_MESSAGE_CC 2
 
-class MIDICable;
 class Serializer;
 class Deserializer;
+
+// Minimal MIDICable for patch_cable_set.cpp (grabVelocityToLevelFromMIDIInput)
+class MIDICable {
+public:
+	bool hasDefaultVelocityToLevelSet() { return defaultVelocityToLevel != 0; }
+	int32_t defaultVelocityToLevel{0};
+};
 
 enum class MIDIMatchType { NO_MATCH, CHANNEL, MPE_MEMBER, MPE_MASTER };
 

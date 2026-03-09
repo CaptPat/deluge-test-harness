@@ -14,4 +14,5 @@ extern bool defaultUseSharps;
 extern Polarity defaultPatchCablePolarity;
 extern int8_t defaultMagnitude;
 inline constexpr uint8_t defaultVelocity = 64;
+extern uint8_t defaultBendRange[2]; // BEND_RANGE_MAIN=0, BEND_RANGE_FINGER_LEVEL=1
 } // namespace FlashStorage

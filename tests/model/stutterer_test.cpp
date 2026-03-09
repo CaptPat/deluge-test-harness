@@ -19,6 +19,10 @@ struct StutterTestHelper {
 		summary.paramCollection = &unpatchedParams;
 		paramManager.summaries[0] = summary;
 	}
+	~StutterTestHelper() {
+		// Prevent real destructor from delugeDealloc on stack objects
+		paramManager.summaries[0].paramCollection = nullptr;
+	}
 };
 
 TEST_GROUP(StutterTest) {

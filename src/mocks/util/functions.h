@@ -190,7 +190,13 @@ extern int32_t paramNeutralValues[];
 extern int32_t paramRanges[];
 int32_t getExp(int32_t presetValue, int32_t adjustment);
 int32_t getFinalParameterValueExp(int32_t paramNeutralValue, int32_t patchedValue);
+int32_t getFinalParameterValueLinear(int32_t paramNeutralValue, int32_t patchedValue);
+int32_t getFinalParameterValueVolume(int32_t paramNeutralValue, int32_t patchedValue);
+int32_t getFinalParameterValueHybrid(int32_t paramNeutralValue, int32_t patchedValue);
+int32_t getFinalParameterValueExpWithDumbEnvelopeHack(int32_t paramNeutralValue, int32_t patchedValue, int32_t p);
+int32_t lookupReleaseRate(int32_t input);
 int32_t cableToExpParamShortcut(int32_t sourceValue);
+int32_t cableToLinearParamShortcut(int32_t sourceValue);
 
 // Phase F: arp string conversion functions — used by arpeggiator.cpp serialization
 ArpMode oldModeToArpMode(OldArpMode oldMode);
@@ -206,3 +212,8 @@ char const* arpOctaveModeToString(ArpOctaveMode mode);
 ArpOctaveMode stringToArpOctaveMode(char const* string);
 char const* arpMpeModSourceToString(ArpMpeModSource modSource);
 ArpMpeModSource stringToArpMpeModSource(char const* string);
+
+// Phase I2: PatchSource string conversions — used by patch_cable_set.cpp serialization
+char const* sourceToString(PatchSource source);
+PatchSource stringToSource(char const* string);
+char const* sourceToStringShort(PatchSource source);

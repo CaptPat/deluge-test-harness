@@ -158,6 +158,58 @@ int32_t cableToExpParamShortcut(int32_t sourceValue) {
 	return sourceValue >> 2;
 }
 
+// Phase H: getFinalParameterValue* family — needed by patcher.cpp
+// Ported from firmware/src/deluge/util/functions.cpp
+
+int32_t getFinalParameterValueHybrid(int32_t paramNeutralValue, int32_t patchedValue) {
+	int32_t preLimits = (paramNeutralValue >> 2) + (patchedValue >> 1);
+	return signed_saturate<32 - 3>(preLimits) << 2;
+}
+
+int32_t getFinalParameterValueVolume(int32_t paramNeutralValue, int32_t patchedValue) {
+	int32_t positivePatchedValue = patchedValue + 536870912;
+	positivePatchedValue = (positivePatchedValue >> 16) * (positivePatchedValue >> 15);
+	return lshiftAndSaturate<5>(multiply_32x32_rshift32(positivePatchedValue, paramNeutralValue));
+}
+
+int32_t getFinalParameterValueLinear(int32_t paramNeutralValue, int32_t patchedValue) {
+	int32_t positivePatchedValue = patchedValue + 536870912;
+	return lshiftAndSaturate<3>(multiply_32x32_rshift32(positivePatchedValue, paramNeutralValue));
+}
+
+int32_t lookupReleaseRate(int32_t input) {
+	int32_t magnitude = 24;
+	int32_t whichValue = input >> magnitude;
+	int32_t howMuchFurther = (input << (31 - magnitude)) & 2147483647;
+	whichValue += 32;
+	if (whichValue < 0) {
+		return releaseRateTable64[0];
+	}
+	else if (whichValue >= 64) {
+		return releaseRateTable64[64];
+	}
+	int32_t value1 = releaseRateTable64[whichValue];
+	int32_t value2 = releaseRateTable64[whichValue + 1];
+	return (multiply_32x32_rshift32(value2, howMuchFurther)
+	        + multiply_32x32_rshift32(value1, 2147483647 - howMuchFurther))
+	       << 1;
+}
+
+int32_t getFinalParameterValueExpWithDumbEnvelopeHack(int32_t paramNeutralValue, int32_t patchedValue, int32_t p) {
+	namespace params = deluge::modulation::params;
+	if (params::LOCAL_ENV_0_DECAY <= p && p <= params::LOCAL_ENV_3_RELEASE) {
+		return multiply_32x32_rshift32(paramNeutralValue, lookupReleaseRate(patchedValue));
+	}
+	if (params::LOCAL_ENV_0_ATTACK <= p && p <= params::LOCAL_ENV_3_ATTACK) {
+		patchedValue = -patchedValue;
+	}
+	return getFinalParameterValueExp(paramNeutralValue, patchedValue);
+}
+
+int32_t cableToLinearParamShortcut(int32_t sourceValue) {
+	return sourceValue >> 2;
+}
+
 // Phase 8: strcmpspecial — natural string comparison with numeric ordering
 // Ported from firmware/src/deluge/util/functions.cpp:1718-1863
 // Global flags control note name interpretation (default: off)
@@ -274,4 +326,41 @@ int32_t strcmpspecial(char const* first, char const* second) {
 			}
 		}
 	}
+}
+
+// Phase I2: PatchSource string conversions ported from firmware/src/deluge/util/functions.cpp
+
+char const* sourceToString(PatchSource source) {
+	switch (source) {
+	case PatchSource::LFO_GLOBAL_1: return "lfo1";
+	case PatchSource::LFO_GLOBAL_2: return "lfo3";
+	case PatchSource::LFO_LOCAL_1: return "lfo2";
+	case PatchSource::LFO_LOCAL_2: return "lfo4";
+	case PatchSource::ENVELOPE_0: return "envelope1";
+	case PatchSource::ENVELOPE_1: return "envelope2";
+	case PatchSource::ENVELOPE_2: return "envelope3";
+	case PatchSource::ENVELOPE_3: return "envelope4";
+	case PatchSource::VELOCITY: return "velocity";
+	case PatchSource::NOTE: return "note";
+	case PatchSource::SIDECHAIN: return "compressor";
+	case PatchSource::RANDOM: return "random";
+	case PatchSource::AFTERTOUCH: return "aftertouch";
+	case PatchSource::X: return "x";
+	case PatchSource::Y: return "y";
+	default: return "none";
+	}
+}
+
+PatchSource stringToSource(char const* string) {
+	for (int32_t s = 0; s < kNumPatchSources; s++) {
+		auto patchSource = static_cast<PatchSource>(s);
+		if (!strcmp(string, sourceToString(patchSource))) {
+			return patchSource;
+		}
+	}
+	return PatchSource::NONE;
+}
+
+char const* sourceToStringShort(PatchSource source) {
+	return sourceToString(source);
 }

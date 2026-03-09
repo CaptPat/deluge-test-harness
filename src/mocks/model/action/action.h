@@ -47,4 +47,8 @@ class Action {
 public:
 	Action() = default;
 	void addConsequence(Consequence* consequence) { (void)consequence; }
+	void recordParamChangeIfNotAlreadySnapshotted(ModelStackWithAutoParam* modelStack, bool stealData) {
+		(void)modelStack;
+		(void)stealData;
+	}
 };

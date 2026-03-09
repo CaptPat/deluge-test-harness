@@ -51,6 +51,14 @@ int32_t spareRenderingBuffer[2][SSI_TX_BUFFER_NUM_SAMPLES] = {};
 #include "gui/views/performance_view.h"
 PerformanceView performanceView{};
 
+// Phase H2: View global for param_manager.cpp
+#include "gui/views/view.h"
+View view{};
+
+// Phase I: ActionLogger global for param_set.cpp
+#include "model/action/action_logger.h"
+ActionLogger actionLogger;
+
 // Phase 16: Session global and defaultClipSectionColours for clip_instance.cpp
 #include "playback/mode/session.h"
 Session session;

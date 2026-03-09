@@ -45,6 +45,7 @@ public:
 	ArmState armState = ArmState::OFF;
 
 	bool isArrangementOnlyClip() { return false; }
+	bool isActiveOnOutput() { return true; }
 
 	// TimelineCounter pure virtual overrides
 	int32_t getLastProcessedPos() const override { return 0; }

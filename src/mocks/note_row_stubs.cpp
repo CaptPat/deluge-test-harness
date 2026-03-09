@@ -1,44 +1,7 @@
-// Stubs for NoteRow constructor/destructor and ParamManager constructor/destructor.
-// We include note_row.h (via shadow chain) but don't compile note_row.cpp
-// because it has 20+ deep dependencies.
+// Stubs for NoteRow constructor/destructor.
+// ParamManager/ParamManagerForTimeline stubs moved to real param_manager.cpp (Phase H2).
 
 #include "model/note/note_row.h"
-
-// ── ParamManager stubs ───────────────────────────────────────────────────
-// param_manager.cpp is not compiled (needs ParamCollection subclass implementations).
-
-ParamManager::ParamManager() : resonanceBackwardsCompatibilityProcessed(false), expressionParamSetOffset(0) {
-	for (auto& s : summaries) {
-		s.paramCollection = nullptr;
-		for (auto& w : s.whichParamsAreAutomated) {
-			w = 0;
-		}
-		for (auto& w : s.whichParamsAreInterpolating) {
-			w = 0;
-		}
-	}
-}
-
-ParamManager::~ParamManager() = default;
-
-ParamManagerForTimeline::ParamManagerForTimeline() : ticksTilNextEvent(0), ticksSkipped(0) {
-}
-
-#if ALPHA_OR_BETA_VERSION
-ParamManagerForTimeline* ParamManager::toForTimeline() {
-	return static_cast<ParamManagerForTimeline*>(this);
-}
-
-ParamManagerForTimeline* ParamManagerForTimeline::toForTimeline() {
-	return this;
-}
-#endif
-
-// ── ParamManager non-inline methods ──────────────────────────────────────
-
-void ParamManager::notifyParamModifiedInSomeWay(ModelStackWithAutoParam const*, int32_t, bool, bool) {
-	// No-op in test harness
-}
 
 // ── NoteRow stubs ────────────────────────────────────────────────────────
 

@@ -225,6 +225,14 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/modulation/params/param.cpp
     # Phase 12F: Now unlocked by param_set.h compiling through
     ${FIRMWARE_SRC}/deluge/model/mod_controllable/ModFXProcessor.cpp
+)
+# ModFXProcessor.h uses UnpatchedParamSet* without forward-declaring it.
+# The relative #include "ModFXProcessor.h" bypasses our shadow, so inject via -include.
+set_source_files_properties(
+    ${FIRMWARE_SRC}/deluge/model/mod_controllable/ModFXProcessor.cpp
+    PROPERTIES COMPILE_FLAGS "-include modulation/params/param_set.h"
+)
+target_sources(deluge_firmware_src PRIVATE
     # Phase 14A: Clip instance consequences (Output shadow unlocks instrument.h)
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_change.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_clip_instance_existence.cpp
@@ -243,6 +251,12 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/modulation/arpeggiator.cpp
     # Phase G: stutterer
     ${FIRMWARE_SRC}/deluge/model/fx/stutterer.cpp
+    # Phase H: patcher (patch cable routing engine)
+    ${FIRMWARE_SRC}/deluge/modulation/patch/patcher.cpp
+    # Phase H2: param_manager, param_set, patch_cable_set (modulation core)
+    ${FIRMWARE_SRC}/deluge/modulation/params/param_manager.cpp
+    ${FIRMWARE_SRC}/deluge/modulation/params/param_set.cpp
+    ${FIRMWARE_SRC}/deluge/modulation/patch/patch_cable_set.cpp
     # Phase 16: clip_instance (real), consequence_instrument_clip_multiply,
     #           consequence_performance_view_press, DX7Cartridge
     ${FIRMWARE_SRC}/deluge/model/clip/clip_instance.cpp
@@ -394,6 +408,10 @@ add_executable(HarnessTests
     tests/dsp/filter_blend_test.cpp
     # Phase G: stutterer tests
     tests/model/stutterer_test.cpp
+    # Phase H: patcher tests
+    tests/modulation/patcher_test.cpp
+    # Phase I: param_set tests
+    tests/modulation/param_set_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )
