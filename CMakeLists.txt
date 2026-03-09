@@ -78,6 +78,8 @@ add_library(deluge_mocks STATIC
     src/mocks/storage/audio_file_stubs.cpp
     # Phase C stubs
     src/mocks/param_set_stubs.cpp
+    # Phase F stubs
+    src/mocks/arpeggiator_stubs.cpp
 )
 target_include_directories(deluge_mocks PUBLIC
     src/mocks
@@ -237,6 +239,8 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_existence.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_horizontal_shift.cpp
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_mute.cpp
+    # Phase F: param_set.h unlock — arpeggiator + downstream
+    ${FIRMWARE_SRC}/deluge/modulation/arpeggiator.cpp
     # Phase 16: clip_instance (real), consequence_instrument_clip_multiply,
     #           consequence_performance_view_press, DX7Cartridge
     ${FIRMWARE_SRC}/deluge/model/clip/clip_instance.cpp
@@ -285,6 +289,8 @@ add_executable(HarnessTests
     tests/modulation/patch_cable_test.cpp
     tests/modulation/auto_param_test.cpp
     tests/modulation/midi_containers_test.cpp
+    # Phase F
+    tests/modulation/arpeggiator_test.cpp
     # Phase 4
     tests/util/semver_test.cpp
     tests/util/firmware_version_test.cpp
@@ -382,6 +388,8 @@ add_executable(HarnessTests
     tests/util/ordered_resizeable_array_test.cpp
     tests/util/resizeable_array_test.cpp
     tests/hid/encoder_quadrature_test.cpp
+    # Phase E: coverage-guided gap filling
+    tests/dsp/filter_blend_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )

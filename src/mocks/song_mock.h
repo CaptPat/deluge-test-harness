@@ -2,6 +2,8 @@
 
 #include "clip_mocks.h"
 #include "model/fx/stutterer.h"
+#include "model/scale/musical_key.h"
+#include "model/sync.h"
 #include "util/d_string.h"
 
 #include <cstdint>
@@ -55,6 +57,12 @@ public:
 
 	// Phase 12: param.cpp needs globalEffectable.stutterConfig
 	MockGlobalEffectable globalEffectable;
+
+	// Phase F: arpeggiator.cpp uses currentSong->key
+	MusicalKey key;
+
+	// Phase F: arpeggiator.cpp serialization uses this
+	SyncLevel convertSyncLevelFromFileValueToInternalValue(SyncLevel level) { return level; }
 
 	// Phase 14: Output linked-list stubs for consequence_output_existence
 	Output* firstOutput = nullptr;

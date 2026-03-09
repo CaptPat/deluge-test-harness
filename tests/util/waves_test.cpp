@@ -68,7 +68,38 @@ TEST(Waves, triangleSmallAtQuarter) {
 	CHECK_EQUAL(0, getTriangleSmall(0x40000000u));
 }
 
+TEST(Waves, triangleSmallSecondHalf) {
+	// phase >= 0x80000000 hits the negation branch (line 49)
+	int32_t val = getTriangleSmall(0x80000000u);
+	// phase = -0x80000000 = 0x80000000 (wraps), result = 0x80000000 - 0x40000000
+	CHECK_EQUAL(1073741824, val);
+}
+
+TEST(Waves, triangleSmallThreeQuarter) {
+	// 0xC0000000 → negated = 0x40000000, result = 0x40000000 - 0x40000000 = 0
+	CHECK_EQUAL(0, getTriangleSmall(0xC0000000u));
+}
+
+TEST(Waves, triangleSmallMaxPhase) {
+	// 0xFFFFFFFF → negated = 1, result = 1 - 0x40000000
+	int32_t val = getTriangleSmall(0xFFFFFFFFu);
+	CHECK_EQUAL(1 - 1073741824, val);
+}
+
 // ── getTriangle ────────────────────────────────────────────────────────
+
+TEST(Waves, sineWithSmallBitsHitsLeftShift) {
+	// numBitsInInput=16 → rshiftAmount = 16 - 16 - 8 = -8, hits the else branch (line 23)
+	int32_t val = getSine(0x4000u, 16); // quarter phase in 16 bits
+	CHECK(val > 0);
+}
+
+TEST(Waves, interpolateTableNegativeRshift) {
+	// Direct call with numBitsInInput < 24 to exercise left-shift path
+	// numBitsInInput=20 → rshiftAmount = 20-16-8 = -4 → left shift by 4
+	int32_t val = interpolateTableSigned(0x40000u, 20, sineWaveSmall, 8);
+	CHECK(val > 0);
+}
 
 TEST(Waves, triangleAtQuarterIsZero) {
 	CHECK_EQUAL(0, getTriangle(0x40000000u));

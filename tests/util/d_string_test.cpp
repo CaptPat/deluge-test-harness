@@ -218,6 +218,99 @@ TEST(StringTest, copyThenModifyOriginal) {
 	STRCMP_EQUAL("original", b.get());
 }
 
+// --- Shared string operations (coverage of reference-counting paths) ---
+
+TEST(StringTest, shortenSharedStringClones) {
+	// Lines 188, 190-192, 194: shorten on a shared string clones memory
+	String a;
+	a.set("hello world test");
+	String b(a);
+	CHECK_EQUAL(a.get(), b.get()); // sharing memory
+
+	Error err = a.shorten(5);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("hello", a.get());
+	STRCMP_EQUAL("hello world test", b.get()); // b unaffected
+	CHECK(a.get() != b.get()); // no longer sharing
+}
+
+TEST(StringTest, setCharOnSharedStringClones) {
+	// Lines 314, 316-319, 322, 325-328: setChar on a shared string clones
+	String a;
+	a.set("hello");
+	String b(a);
+	CHECK_EQUAL(a.get(), b.get()); // sharing
+
+	Error err = a.setChar('X', 2);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("heXlo", a.get());
+	STRCMP_EQUAL("hello", b.get()); // b unaffected
+	CHECK(a.get() != b.get()); // cloned
+}
+
+TEST(StringTest, concatenateStringObject) {
+	// Line 212: concatenate(String*) delegates to concatenate(const char*)
+	String a;
+	a.set("hello");
+	String b;
+	b.set(" world");
+	Error err = a.concatenate(&b);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("hello world", a.get());
+}
+
+TEST(StringTest, concatenateAtPosZeroCallsSet) {
+	// Line 221: concatenateAtPos with pos=0 calls set()
+	String s;
+	s.set("old");
+	Error err = s.concatenateAtPos("new", 0);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("new", s.get());
+}
+
+TEST(StringTest, concatenateAtPosEmptyShortens) {
+	// Line 233: concatenateAtPos with empty string shortens
+	String s;
+	s.set("hello");
+	Error err = s.concatenateAtPos("", 2);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("he", s.get());
+}
+
+TEST(StringTest, selfAssignmentGuard) {
+	// Line 138: set(String*) with self skips operation
+	String s;
+	s.set("test");
+	const char* before = s.get();
+	s.set(&s);
+	// Should be unchanged
+	STRCMP_EQUAL("test", s.get());
+	CHECK_EQUAL(before, s.get());
+}
+
+TEST(StringTest, setLongerStringReusesMemory) {
+	// Lines 95, 108: set with longer string on exclusive memory
+	String s;
+	s.set("short");
+	// Setting to a longer string that fits in allocated size (allocator returns >= requested)
+	Error err = s.set("a bit longer string");
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("a bit longer string", s.get());
+}
+
+TEST(StringTest, concatenateOnSharedStringClones) {
+	// Lines 244-246: concatenateAtPos on shared string clones memory
+	String a;
+	a.set("hello");
+	String b(a);
+	CHECK_EQUAL(a.get(), b.get()); // sharing
+
+	Error err = a.concatenateAtPos("XY", 3);
+	CHECK_EQUAL((int)Error::NONE, (int)err);
+	STRCMP_EQUAL("helXY", a.get());
+	STRCMP_EQUAL("hello", b.get()); // b unaffected
+}
+
 TEST(StringTest, equalsStringObject) {
 	String a;
 	a.set("same");

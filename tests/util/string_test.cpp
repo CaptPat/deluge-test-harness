@@ -63,3 +63,36 @@ TEST(StringUtilTest, fromNoteCodeSharp) {
 	// Should contain sharp marker (# or .)
 	CHECK(result.find('#') != std::string::npos || result.find('.') != std::string::npos);
 }
+
+TEST(StringUtilTest, fromNoteCodeWithLengthOutput) {
+	// Line 82: getLengthWithoutDot != nullptr branch
+	size_t lenWithoutDot = 0;
+	// Note 61 = C#3 — sharp note, so length without dot should be one less
+	std::string result = deluge::string::fromNoteCode(61, &lenWithoutDot);
+	CHECK(lenWithoutDot > 0);
+	CHECK_EQUAL(result.length() - 1, lenWithoutDot);
+}
+
+TEST(StringUtilTest, fromNoteCodeNaturalWithLengthOutput) {
+	size_t lenWithoutDot = 0;
+	// Note 60 = C3 — natural note, length should equal full length
+	std::string result = deluge::string::fromNoteCode(60, &lenWithoutDot);
+	CHECK(lenWithoutDot > 0);
+	CHECK_EQUAL(result.length(), lenWithoutDot);
+}
+
+TEST(StringUtilTest, toCharsEmptyBuffer) {
+	// Line 15: first >= last → no_buffer_space error
+	char buf[1];
+	auto result = deluge::to_chars(buf, buf, 3.14f, 2);
+	CHECK(!result.has_value());
+	CHECK(result.error() == std::errc::no_buffer_space);
+}
+
+TEST(StringUtilTest, toCharsValidBuffer) {
+	char buf[16];
+	auto result = deluge::to_chars(buf, buf + sizeof(buf), 1.5f, 1);
+	CHECK(result.has_value());
+	// Result pointer should be past the start
+	CHECK(*result > buf);
+}

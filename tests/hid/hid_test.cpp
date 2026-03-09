@@ -104,6 +104,34 @@ TEST(PadTest, isPadSidebarCoord) {
 	CHECK(p.isPad());
 }
 
+TEST(PadTest, staticIsPadValidLow) {
+	CHECK(Pad::isPad(0));
+}
+
+TEST(PadTest, staticIsPadMaxValid) {
+	// kDisplayHeight * 2 * 9 - 1 = 143
+	CHECK(Pad::isPad(static_cast<uint8_t>(kDisplayHeight * 2 * 9 - 1)));
+}
+
+TEST(PadTest, staticIsPadInvalidAtBoundary) {
+	// kDisplayHeight * 2 * 9 = 144 — first invalid value
+	CHECK(!Pad::isPad(static_cast<uint8_t>(kDisplayHeight * 2 * 9)));
+}
+
+TEST(PadTest, staticIsPadInvalidHigh) {
+	CHECK(!Pad::isPad(255));
+}
+
+TEST(PadTest, isPadInvalidY) {
+	Pad p(0, kDisplayHeight);
+	CHECK(!p.isPad());
+}
+
+TEST(PadTest, isPadInvalidX) {
+	Pad p(kDisplayWidth + kSideBarWidth, 0);
+	CHECK(!p.isPad());
+}
+
 TEST(PadTest, multipleRoundTrips) {
 	// Test a range of valid pad coordinates
 	for (int y = 0; y < kDisplayHeight; y++) {

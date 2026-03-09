@@ -113,3 +113,23 @@ TEST(SemVerTest, bothEmptyPreReleaseEqual) {
 	SemVer b{1, 0, 0};
 	CHECK((a <=> b) == std::strong_ordering::equal);
 }
+
+// --- WRONG_CHAR error path (semver.cpp line 99) ---
+
+TEST(SemVerTest, parseWrongCharCommaInsteadOfDot) {
+	auto result = SemVer::parse("1,2.3");
+	CHECK(!result.has_value());
+	CHECK_EQUAL((int)SemVer::Parser::Error::WRONG_CHAR, (int)result.error());
+}
+
+TEST(SemVerTest, parseWrongCharSecondSeparator) {
+	auto result = SemVer::parse("1.2,3");
+	CHECK(!result.has_value());
+	CHECK_EQUAL((int)SemVer::Parser::Error::WRONG_CHAR, (int)result.error());
+}
+
+TEST(SemVerTest, parseWrongCharSlash) {
+	auto result = SemVer::parse("1/2.3");
+	CHECK(!result.has_value());
+	CHECK_EQUAL((int)SemVer::Parser::Error::WRONG_CHAR, (int)result.error());
+}

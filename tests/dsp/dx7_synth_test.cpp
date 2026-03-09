@@ -88,6 +88,44 @@ TEST(DX7LUT, tanhLookupNegativeSymmetry) {
 	CHECK_EQUAL(-pos, neg);
 }
 
+TEST(DX7LUT, tanhSaturationLargePositive) {
+	// x >= (17 << 23) hits the saturation branch → returns 1.0 in Q24
+	int32_t val = Tanh::lookup(17 << 23);
+	CHECK_EQUAL(1 << 24, val);
+}
+
+TEST(DX7LUT, tanhSaturationLargeNegative) {
+	// XOR with signum (-1 = 0xFFFFFFFF) gives -(1<<24)-1 due to two's complement
+	int32_t val = Tanh::lookup(-(17 << 23));
+	CHECK_EQUAL(-(1 << 24) - 1, val);
+}
+
+TEST(DX7LUT, tanhSaturationVeryLarge) {
+	int32_t val = Tanh::lookup(100 << 23);
+	CHECK_EQUAL(1 << 24, val);
+}
+
+TEST(DX7LUT, tanhExponentialPathMidRange) {
+	// 4 << 24 ≤ x < 17 << 23 hits the exponential approximation branch
+	int32_t val = Tanh::lookup(10 << 23);
+	// Should be close to 1.0 (Q24) but not exactly
+	CHECK(val > 0);
+	CHECK(val <= (1 << 24));
+}
+
+TEST(DX7LUT, tanhExponentialPathJustAboveTable) {
+	// Just above 4 << 24 = 67108864
+	int32_t val = Tanh::lookup(4 << 24);
+	CHECK(val > 0);
+	CHECK(val <= (1 << 24));
+}
+
+TEST(DX7LUT, tanhExponentialNegative) {
+	int32_t val = Tanh::lookup(-(10 << 23));
+	CHECK(val < 0);
+	CHECK(val >= -(1 << 24));
+}
+
 // ── FmOpKernel ──────────────────────────────────────────────────────────
 
 TEST_GROUP(FmOpKernel){
@@ -214,6 +252,34 @@ TEST(FmCore, algorithmsTableHas32Entries) {
 		}
 		CHECK(hasOutput);
 	}
+}
+
+// n_out counts operators with OUT_BUS_ADD set (fm_core.cpp lines 56-62)
+extern int n_out(const FmAlgorithm& alg);
+
+TEST(FmCore, nOutCountsOutputOperators) {
+	// Algorithm 31 (index 31): all 6 ops → OUT_BUS_ADD
+	CHECK_EQUAL(6, n_out(FmCore::algorithms[31]));
+}
+
+TEST(FmCore, nOutAlgorithm0) {
+	// Algorithm 0: only some ops output
+	int count = n_out(FmCore::algorithms[0]);
+	CHECK(count >= 1);
+	CHECK(count <= 6);
+}
+
+TEST(FmCore, nOutCustomAlgorithm) {
+	FmAlgorithm alg;
+	// Set all ops to 0 (no OUT_BUS_ADD)
+	for (int i = 0; i < 6; i++) alg.ops[i] = 0;
+	CHECK_EQUAL(0, n_out(alg));
+
+	// Set 3 ops to have OUT_BUS_ADD (bit 2 = 4)
+	alg.ops[0] = OUT_BUS_ADD;
+	alg.ops[2] = OUT_BUS_ADD;
+	alg.ops[4] = OUT_BUS_ADD;
+	CHECK_EQUAL(3, n_out(alg));
 }
 
 TEST(FmCore, renderProducesOutput) {

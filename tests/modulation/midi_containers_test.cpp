@@ -124,6 +124,74 @@ TEST(MidiKnobArrayTest, insertKnobAtIndex) {
 	CHECK_EQUAL(3, arr.getNumElements());
 }
 
+// ── MIDIKnob virtual method coverage (knob.h lines 37-39) ──────────────
+
+TEST_GROUP(MIDIKnobTest) {};
+
+TEST(MIDIKnobTest, isRelativeTrue) {
+	MIDIKnob k;
+	k.relative = true;
+	CHECK(k.isRelative());
+}
+
+TEST(MIDIKnobTest, isRelativeFalse) {
+	MIDIKnob k;
+	k.relative = false;
+	CHECK(!k.isRelative());
+}
+
+TEST(MIDIKnobTest, is14BitTrue) {
+	MIDIKnob k;
+	k.midiInput.noteOrCC = 128;
+	CHECK(k.is14Bit());
+}
+
+TEST(MIDIKnobTest, is14BitFalse) {
+	MIDIKnob k;
+	k.midiInput.noteOrCC = 64;
+	CHECK(!k.is14Bit());
+}
+
+TEST(MIDIKnobTest, topValueIs127NonRelativeBelow128) {
+	MIDIKnob k;
+	k.midiInput.noteOrCC = 64;
+	k.relative = false;
+	CHECK(k.topValueIs127());
+}
+
+TEST(MIDIKnobTest, topValueIs127RelativeBelow128) {
+	MIDIKnob k;
+	k.midiInput.noteOrCC = 64;
+	k.relative = true;
+	CHECK(!k.topValueIs127());
+}
+
+TEST(MIDIKnobTest, topValueIs127At128) {
+	MIDIKnob k;
+	k.midiInput.noteOrCC = 128;
+	k.relative = false;
+	CHECK(!k.topValueIs127());
+}
+
+// ── ModKnob virtual method coverage ────────────────────────────────────
+
+TEST_GROUP(ModKnobTest) {};
+
+TEST(ModKnobTest, isRelativeReturnsTrue) {
+	ModKnob k;
+	CHECK(k.isRelative());
+}
+
+TEST(ModKnobTest, is14BitReturnsFalse) {
+	ModKnob k;
+	CHECK(!k.is14Bit());
+}
+
+TEST(ModKnobTest, topValueIs127ReturnsFalse) {
+	ModKnob k;
+	CHECK(!k.topValueIs127());
+}
+
 // ── MIDIParam ───────────────────────────────────────────────────────────
 
 TEST_GROUP(MIDIParamTest) {};

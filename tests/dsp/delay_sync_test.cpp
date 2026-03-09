@@ -259,3 +259,281 @@ TEST(DelaySyncTest, switchSyncTypeMidStream) {
 	state.userDelayRate = 1 << 20;
 	setupAndProcess(state);
 }
+
+// --- setTimeToAbandon: all feedback threshold branches ---
+
+TEST_GROUP(DelayAbandonThresholds) {
+	Delay delay;
+
+	void teardown() override { delay.discardBuffers(); }
+
+	void checkThreshold(int32_t feedback, uint8_t expected) {
+		Delay::State state{};
+		state.doDelay = true;
+		state.userDelayRate = 44100;
+		state.delayFeedbackAmount = feedback;
+		delay.setTimeToAbandon(state);
+		CHECK_EQUAL(expected, delay.repeatsUntilAbandon);
+	}
+};
+
+TEST(DelayAbandonThresholds, doDelayFalseGivesZero) {
+	Delay::State state{};
+	state.doDelay = false;
+	state.delayFeedbackAmount = 1 << 30;
+	delay.setTimeToAbandon(state);
+	CHECK_EQUAL(0, delay.repeatsUntilAbandon);
+}
+
+TEST(DelayAbandonThresholds, feedbackBelow33M) {
+	checkThreshold(1000, 1);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt33MBoundary) {
+	// 33554432 is the boundary: below → 1, at/above → 2
+	checkThreshold(33554431, 1);
+	checkThreshold(33554432, 2);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt100MBoundary) {
+	checkThreshold(100663296, 2);
+	checkThreshold(100663297, 3);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt218MBoundary) {
+	checkThreshold(218103808, 3);
+	checkThreshold(218103809, 4);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt318MBoundary) {
+	checkThreshold(318767103, 4);
+	checkThreshold(318767104, 5);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt352MBoundary) {
+	checkThreshold(352321535, 5);
+	checkThreshold(352321536, 6);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt452MBoundary) {
+	checkThreshold(452984831, 6);
+	checkThreshold(452984832, 9);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt520MBoundary) {
+	checkThreshold(520093695, 9);
+	checkThreshold(520093696, 12);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt637MBoundary) {
+	checkThreshold(637534207, 12);
+	checkThreshold(637534208, 13);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt704MBoundary) {
+	checkThreshold(704643071, 13);
+	checkThreshold(704643072, 18);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt771MBoundary) {
+	checkThreshold(771751935, 18);
+	checkThreshold(771751936, 24);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt838MBoundary) {
+	checkThreshold(838860799, 24);
+	checkThreshold(838860800, 40);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt939MBoundary) {
+	checkThreshold(939524095, 40);
+	checkThreshold(939524096, 110);
+}
+
+TEST(DelayAbandonThresholds, feedbackAt1040MBoundary) {
+	checkThreshold(1040187391, 110);
+	checkThreshold(1040187392, 255);
+}
+
+TEST(DelayAbandonThresholds, feedbackMaxGives255) {
+	checkThreshold(INT32_MAX, 255);
+}
+
+// --- hasWrapped decrement and discard ---
+
+TEST(DelayAbandonThresholds, hasWrappedDecrementsAndDiscards) {
+	delay.informWhetherActive(true, 44100);
+	delay.repeatsUntilAbandon = 2;
+	delay.hasWrapped();
+	CHECK_EQUAL(1, delay.repeatsUntilAbandon);
+	CHECK(delay.isActive());
+
+	delay.informWhetherActive(true, 44100);
+	delay.repeatsUntilAbandon = 1;
+	delay.hasWrapped();
+	CHECK_EQUAL(0, delay.repeatsUntilAbandon);
+	CHECK_FALSE(delay.isActive()); // buffers discarded
+}
+
+TEST(DelayAbandonThresholds, hasWrapped255NeverDecreases) {
+	delay.informWhetherActive(true, 44100);
+	delay.repeatsUntilAbandon = 255;
+	delay.hasWrapped();
+	CHECK_EQUAL(255, delay.repeatsUntilAbandon);
+	CHECK(delay.isActive());
+}
+
+// --- initializeSecondaryBuffer branches ---
+
+TEST_GROUP(DelaySecondaryBufferTest) {
+	Delay delay;
+	StereoSample buf[64];
+
+	void setup() override {
+		memset(buf, 0, sizeof(buf));
+	}
+
+	void teardown() override {
+		delay.discardBuffers();
+	}
+
+	void fillDC(int32_t amp = 1 << 20) {
+		for (auto& s : buf) {
+			s.l = amp;
+			s.r = amp;
+		}
+	}
+};
+
+// Helper: activate delay and move secondary→primary via copySecondaryToPrimary
+// This gives us a primary buffer we can use for resampling tests.
+
+TEST(DelaySecondaryBufferTest, directSecondaryBufferInit) {
+	// Directly test init of secondary buffer — verifies allocator works
+	Error result = delay.secondaryBuffer.init(44100);
+	LONGS_EQUAL(static_cast<int>(Error::NONE), static_cast<int>(result));
+	CHECK(delay.secondaryBuffer.isActive());
+}
+
+TEST(DelaySecondaryBufferTest, initSecondaryPreciseRelative) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+	CHECK(delay.primaryBuffer.isActive());
+
+	// Use a very different rate so buffer size differs from primaryBuffer.size()
+	delay.initializeSecondaryBuffer(11025, true);
+	// If allocation succeeded, secondary is active. If size matched primary, it's skipped.
+	// Just verify no crash — the path was exercised.
+}
+
+TEST(DelaySecondaryBufferTest, initSecondarySeparatePrecision) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+	CHECK(delay.primaryBuffer.isActive());
+
+	delay.initializeSecondaryBuffer(11025, false);
+}
+
+// --- Resampling read/write path ---
+
+TEST(DelaySecondaryBufferTest, resamplingReadWritePath) {
+	// Setup: primary buffer at rate 44100
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+	CHECK(delay.primaryBuffer.isActive());
+
+	// First process at native rate to write some data
+	Delay::State state{};
+	state.doDelay = true;
+	state.userDelayRate = 44100;
+	state.delayFeedbackAmount = 1 << 30;
+	delay.userRateLastTime = 44100;
+	delay.countCyclesWithoutChange = 0;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+
+	// Now process with a different rate to trigger resampling
+	state.userDelayRate = 22050;
+	delay.userRateLastTime = 22050;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+
+	// Should not crash — resampling read and write paths exercised
+	CHECK(delay.primaryBuffer.isActive());
+}
+
+TEST(DelaySecondaryBufferTest, resamplingAtDoubleRate) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+
+	Delay::State state{};
+	state.doDelay = true;
+	state.userDelayRate = 44100;
+	state.delayFeedbackAmount = 1 << 30;
+	delay.userRateLastTime = 44100;
+	delay.countCyclesWithoutChange = 0;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+
+	// Process at double native rate — triggers resampling
+	state.userDelayRate = 88200;
+	delay.userRateLastTime = 88200;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+
+	CHECK(delay.primaryBuffer.isActive());
+}
+
+TEST(DelaySecondaryBufferTest, settledRateTriggersSecondaryInitPath) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+
+	Delay::State state{};
+	state.doDelay = true;
+	state.userDelayRate = 22050; // Different from native 44100
+	state.delayFeedbackAmount = 1 << 30;
+	delay.userRateLastTime = 22050;
+	// Pretend rate has been stable for >kSampleRate>>5 samples
+	delay.countCyclesWithoutChange = 44100;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+	// Exercises the settled-rate branch in process() — may or may not allocate
+	// depending on buffer size match. No crash = success.
+}
+
+TEST(DelaySecondaryBufferTest, doubleNativeRateTriggersSecondaryInitPath) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+
+	Delay::State state{};
+	state.doDelay = true;
+	state.userDelayRate = 88200; // >= nativeRate << 1
+	state.delayFeedbackAmount = 1 << 30;
+	delay.userRateLastTime = 88200;
+	delay.countCyclesWithoutChange = 0;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+	// Exercises the double-rate branch
+}
+
+TEST(DelaySecondaryBufferTest, belowHalfNativeRateTriggersSecondaryInitPath) {
+	delay.informWhetherActive(true, 44100);
+	delay.copySecondaryToPrimary();
+
+	Delay::State state{};
+	state.doDelay = true;
+	state.userDelayRate = 11025; // < nativeRate >> 1 (22050)
+	state.delayFeedbackAmount = 1 << 30;
+	delay.userRateLastTime = 11025;
+	delay.countCyclesWithoutChange = 0;
+
+	fillDC();
+	delay.process({buf, 64}, state);
+	// Exercises the below-half-rate branch
+}

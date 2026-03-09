@@ -184,3 +184,18 @@ struct StereoFloatSample {
 extern bool shouldInterpretNoteNames;
 extern bool octaveStartsFromA;
 int32_t strcmpspecial(char const* first, char const* second);
+
+// Phase F: arp string conversion functions — used by arpeggiator.cpp serialization
+ArpMode oldModeToArpMode(OldArpMode oldMode);
+ArpNoteMode oldModeToArpNoteMode(OldArpMode oldMode);
+ArpOctaveMode oldModeToArpOctaveMode(OldArpMode oldMode);
+char const* oldArpModeToString(OldArpMode mode);
+OldArpMode stringToOldArpMode(char const* string);
+char const* arpModeToString(ArpMode mode);
+ArpMode stringToArpMode(char const* string);
+char const* arpNoteModeToString(ArpNoteMode mode);
+ArpNoteMode stringToArpNoteMode(char const* string);
+char const* arpOctaveModeToString(ArpOctaveMode mode);
+ArpOctaveMode stringToArpOctaveMode(char const* string);
+char const* arpMpeModSourceToString(ArpMpeModSource modSource);
+ArpMpeModSource stringToArpMpeModSource(char const* string);

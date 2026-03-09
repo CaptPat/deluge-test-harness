@@ -32,6 +32,10 @@ void handle_cpu_fault(uint32_t addrSYSLR, uint32_t addrSYSSP, uint32_t addrUSRLR
 // and references this extern. The NEON path is never taken in tests (neon=false).
 void neon_fm_kernel(const int32_t*, const int32_t*, int32_t*, int, int32_t, int32_t, int32_t, int32_t) {}
 
+// Default readInput: returns 1 (idle state for encoders).
+// Tests can override with a strong symbol for controllable GPIO mocking.
+__attribute__((weak)) uint16_t readInput(uint8_t p, uint8_t q) { (void)p; (void)q; return 1; }
+
 } // extern "C"
 
 // Global buffers referenced by firmware utility code
