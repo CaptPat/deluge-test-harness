@@ -377,6 +377,11 @@ add_executable(HarnessTests
     # Phase C2: delay sync + preset Monte Carlo stress tests
     tests/dsp/delay_sync_test.cpp
     tests/dsp/preset_values_stress_test.cpp
+    # Phase D: container, encoder & DX7 deep coverage
+    tests/dsp/dx7_note_test.cpp
+    tests/util/ordered_resizeable_array_test.cpp
+    tests/util/resizeable_array_test.cpp
+    tests/hid/encoder_quadrature_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )
