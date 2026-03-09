@@ -1,7 +1,10 @@
 // Minimal stubs for UnpatchedParamSet + ParamSet — just enough to construct
 // and call getValue() for ModFX render tests.
 #include "modulation/params/param_collection_summary.h"
+#include "modulation/params/param_manager.h"
 #include "modulation/params/param_set.h"
+
+// ParamManagerForTimeline constructor is in note_row_stubs.cpp
 
 // ParamSet constructor
 ParamSet::ParamSet(int32_t newObjectSize, ParamCollectionSummary* summary)

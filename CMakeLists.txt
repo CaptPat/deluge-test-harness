@@ -241,6 +241,8 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/model/consequence/consequence_note_row_mute.cpp
     # Phase F: param_set.h unlock — arpeggiator + downstream
     ${FIRMWARE_SRC}/deluge/modulation/arpeggiator.cpp
+    # Phase G: stutterer
+    ${FIRMWARE_SRC}/deluge/model/fx/stutterer.cpp
     # Phase 16: clip_instance (real), consequence_instrument_clip_multiply,
     #           consequence_performance_view_press, DX7Cartridge
     ${FIRMWARE_SRC}/deluge/model/clip/clip_instance.cpp
@@ -390,6 +392,8 @@ add_executable(HarnessTests
     tests/hid/encoder_quadrature_test.cpp
     # Phase E: coverage-guided gap filling
     tests/dsp/filter_blend_test.cpp
+    # Phase G: stutterer tests
+    tests/model/stutterer_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )

@@ -185,6 +185,13 @@ extern bool shouldInterpretNoteNames;
 extern bool octaveStartsFromA;
 int32_t strcmpspecial(char const* first, char const* second);
 
+// Phase G: param functions — used by stutterer.cpp
+extern int32_t paramNeutralValues[];
+extern int32_t paramRanges[];
+int32_t getExp(int32_t presetValue, int32_t adjustment);
+int32_t getFinalParameterValueExp(int32_t paramNeutralValue, int32_t patchedValue);
+int32_t cableToExpParamShortcut(int32_t sourceValue);
+
 // Phase F: arp string conversion functions — used by arpeggiator.cpp serialization
 ArpMode oldModeToArpMode(OldArpMode oldMode);
 ArpNoteMode oldModeToArpNoteMode(OldArpMode oldMode);

@@ -129,6 +129,35 @@ bool shouldDoPanning(int32_t panAmount, int32_t* amplitudeL, int32_t* amplitudeR
 	return true;
 }
 
+// Phase G: paramNeutralValues, getExp, getFinalParameterValueExp, cableToExpParamShortcut
+// Ported from firmware/src/deluge/util/functions.cpp — needed by stutterer.cpp
+int32_t paramNeutralValues[deluge::modulation::params::GLOBAL_NONE] = {};
+int32_t paramRanges[deluge::modulation::params::GLOBAL_NONE] = {};
+
+// Initialize key neutral values at static init time
+static struct ParamNeutralInit {
+	ParamNeutralInit() {
+		namespace params = deluge::modulation::params;
+		// GLOBAL_DELAY_RATE neutral value from firmware/src/deluge/util/functions.cpp
+		paramNeutralValues[params::GLOBAL_DELAY_RATE] = 536870912;
+	}
+} paramNeutralInit;
+
+int32_t getExp(int32_t presetValue, int32_t adjustment) {
+	int32_t magnitudeIncrease = (adjustment >> 26) + 2;
+	int32_t adjustedPresetValue =
+	    multiply_32x32_rshift32(presetValue, interpolateTable(adjustment & 67108863, 26, expTableSmall));
+	return increaseMagnitudeAndSaturate(adjustedPresetValue, magnitudeIncrease);
+}
+
+int32_t getFinalParameterValueExp(int32_t paramNeutralValue, int32_t patchedValue) {
+	return getExp(paramNeutralValue, patchedValue);
+}
+
+int32_t cableToExpParamShortcut(int32_t sourceValue) {
+	return sourceValue >> 2;
+}
+
 // Phase 8: strcmpspecial — natural string comparison with numeric ordering
 // Ported from firmware/src/deluge/util/functions.cpp:1718-1863
 // Global flags control note name interpretation (default: off)
