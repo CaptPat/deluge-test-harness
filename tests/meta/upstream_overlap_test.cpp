@@ -23,6 +23,10 @@ const std::map<std::string, std::vector<std::string>> knownOverlap = {
     {"notes_state_tests.cpp", {}}, // no separate harness mirror needed (header-only, same test)
     {"function_tests.cpp", {"tests/util/const_functions_test.cpp"}},
     {"time_tests.cpp", {"tests/util/clock_type_test.cpp"}},
+    {"browser_search_tests.cpp", {"tests/util/browser_search_test.cpp"}},
+    {"filter_morph_label_tests.cpp", {"tests/modulation/filter_morph_label_test.cpp"}},
+    {"pedal_state_tests.cpp", {"tests/model/pedal_state_test.cpp"}},
+    {"reverb_filter_roundtrip_tests.cpp", {"tests/dsp/reverb_filter_roundtrip_test.cpp"}},
 };
 
 // Upstream tests with no harness equivalent (and why)
