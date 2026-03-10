@@ -81,6 +81,9 @@ target_include_directories(deluge_mocks PUBLIC
 target_link_libraries(deluge_mocks PUBLIC etl::etl)
 target_compile_options(deluge_mocks PUBLIC
     $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
+    # Firmware's dsp/dx/aligned_buf.h uses intptr_t without including <cstdint>;
+    # works on MinGW (transitive include) but fails on Linux GCC 14.
+    "SHELL:-include cstdint"
 )
 
 # ── Real firmware source compiled on x86 ────────────────────────────────
@@ -264,11 +267,6 @@ target_include_directories(deluge_firmware_src PUBLIC
     src/mocks
     ${FIRMWARE_SRC}
     ${FIRMWARE_SRC}/deluge
-)
-target_compile_options(deluge_firmware_src PRIVATE
-    # Firmware's dsp/dx/aligned_buf.h uses intptr_t without including <cstdint>;
-    # works on MinGW (transitive include) but fails on Linux GCC 14.
-    "SHELL:-include cstdint"
 )
 target_link_libraries(deluge_firmware_src PUBLIC deluge_mocks etl::etl)
 
