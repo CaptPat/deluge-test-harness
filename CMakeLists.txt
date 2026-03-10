@@ -265,6 +265,11 @@ target_include_directories(deluge_firmware_src PUBLIC
     ${FIRMWARE_SRC}
     ${FIRMWARE_SRC}/deluge
 )
+target_compile_options(deluge_firmware_src PRIVATE
+    # Firmware's dsp/dx/aligned_buf.h uses intptr_t without including <cstdint>;
+    # works on MinGW (transitive include) but fails on Linux GCC 14.
+    "SHELL:-include cstdint"
+)
 target_link_libraries(deluge_firmware_src PUBLIC deluge_mocks etl::etl)
 
 # ── Test harness library ─────────────────────────────────────────────────
