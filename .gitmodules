@@ -1,3 +1,4 @@
 [submodule "firmware"]
 	path = firmware
-	url = https://github.com/SynthstromAudible/DelugeFirmware.git
+	url = https://github.com/CaptPat/DelugeFirmware.git
+	branch = harness/baseline
