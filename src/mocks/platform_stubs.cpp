@@ -38,6 +38,14 @@ __attribute__((weak)) uint16_t readInput(uint8_t p, uint8_t q) { (void)p; (void)
 
 } // extern "C"
 
+// l10n: ensure chosenLanguage is never null — tests that call l10n::get()
+// (e.g. getPatchedParamDisplayName) crash if this isn't set before they run.
+#include "gui/l10n/l10n.h"
+#include "gui/l10n/strings.h"
+static struct L10nInit {
+	L10nInit() { deluge::l10n::chosenLanguage = &deluge::l10n::built_in::english; }
+} l10nInit;
+
 // Global buffers referenced by firmware utility code
 char miscStringBuffer[256] = {};
 

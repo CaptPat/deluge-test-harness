@@ -28,10 +28,6 @@ struct StutterTestHelper {
 TEST_GROUP(StutterTest) {
 	Stutterer stut;
 	StutterTestHelper helper;
-
-	void setup() override {
-		stut = Stutterer{};
-	}
 };
 
 TEST(StutterTest, defaultConstruction) {

@@ -65,10 +65,22 @@ static const Patcher::Config localConfig = {
 
 // ── Test group ──────────────────────────────────────────────────────────
 TEST_GROUP(PatcherTest){
+	int32_t savedNeutralValues[params::kNumParams]{};
+	int32_t savedRanges[params::kNumParams]{};
+
 	void setup() override {
-		// Reset global arrays to avoid cross-test contamination
+		// Save and zero global arrays to avoid cross-test contamination.
+		// Must restore in teardown — other test groups (e.g. StutterTest)
+		// depend on non-zero neutral values like GLOBAL_DELAY_RATE.
+		memcpy(savedNeutralValues, paramNeutralValues, sizeof(savedNeutralValues));
+		memcpy(savedRanges, paramRanges, sizeof(savedRanges));
 		memset(paramNeutralValues, 0, sizeof(int32_t) * params::kNumParams);
 		memset(paramRanges, 0, sizeof(int32_t) * params::kNumParams);
+	}
+
+	void teardown() override {
+		memcpy(paramNeutralValues, savedNeutralValues, sizeof(savedNeutralValues));
+		memcpy(paramRanges, savedRanges, sizeof(savedRanges));
 	}
 };
 
