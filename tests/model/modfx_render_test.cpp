@@ -4,6 +4,7 @@
 #include "model/mod_controllable/ModFXProcessor.h"
 #include "modulation/params/param_collection_summary.h"
 #include "modulation/params/param_set.h"
+#include "processing/engines/audio_engine.h"
 #include <cmath>
 #include <cstring>
 #include <span>
@@ -282,6 +283,87 @@ TEST(ModFXRender, chorusReducesPostFXVolume) {
 	                  &ctx.params, true);
 	// Chorus setup divides volume by sqrt(2) for wet/dry mixing
 	CHECK(vol < kHalfQ31);
+}
+
+// --- Mono rendering path (AudioEngine::renderInStereo = false) ---
+// Exercises processOneModFXSample<modFXType, false> template instantiations
+
+TEST(ModFXRender, flangerMono) {
+	AudioEngine::renderInStereo = false;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 4);
+	TestParamContext ctx;
+	ctx.setFeedback(kHalfQ31 / 2);
+	proc.tickLFO(100, 1 << 20);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::FLANGER, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+	CHECK(isBounded(buffer, kBufferSize));
+	AudioEngine::renderInStereo = true;
+}
+
+TEST(ModFXRender, chorusMono) {
+	AudioEngine::renderInStereo = false;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 4);
+	TestParamContext ctx;
+	proc.tickLFO(100, 1 << 20);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::CHORUS, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+	CHECK(isBounded(buffer, kBufferSize));
+	AudioEngine::renderInStereo = true;
+}
+
+TEST(ModFXRender, chorusStereoMono) {
+	AudioEngine::renderInStereo = false;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 4);
+	TestParamContext ctx;
+	proc.tickLFO(100, 1 << 20);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::CHORUS_STEREO, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+	CHECK(isBounded(buffer, kBufferSize));
+	AudioEngine::renderInStereo = true;
+}
+
+TEST(ModFXRender, warbleMono) {
+	AudioEngine::renderInStereo = false;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 4);
+	TestParamContext ctx;
+	ctx.setFeedback(kHalfQ31 / 2);
+	proc.tickLFO(100, 1 << 20);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::WARBLE, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+	CHECK(isBounded(buffer, kBufferSize));
+	AudioEngine::renderInStereo = true;
+}
+
+TEST(ModFXRender, dimensionMono) {
+	AudioEngine::renderInStereo = false;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 4);
+	TestParamContext ctx;
+	proc.tickLFO(100, 1 << 20);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::DIMENSION, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+	CHECK(isBounded(buffer, kBufferSize));
+	AudioEngine::renderInStereo = true;
+}
+
+// --- Multiple passes with different types on same processor ---
+
+TEST(ModFXRender, switchTypeMidStream) {
+	TestParamContext ctx;
+	fillDC(buffer, kBufferSize, kHalfQ31 / 8);
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::FLANGER, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+
+	fillDC(buffer, kBufferSize, kHalfQ31 / 8);
+	postFXVolume = kHalfQ31;
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::CHORUS, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+
+	fillDC(buffer, kBufferSize, kHalfQ31 / 8);
+	postFXVolume = kHalfQ31;
+	proc.processModFX(std::span<StereoSample>(buffer, kBufferSize), ModFXType::WARBLE, kHalfQ31, kHalfQ31,
+	                  &postFXVolume, &ctx.params, true);
+
+	CHECK(isBounded(buffer, kBufferSize));
 }
 
 } // namespace

@@ -357,7 +357,8 @@ add_executable(HarnessTests
     tests/modulation/param_test.cpp
     tests/model/modfx_processor_test.cpp
     tests/model/leaf_phase12_test.cpp
-    # Clip instance consequences + iterance
+    # Clip instance + consequences + iterance
+    tests/model/clip_instance_test.cpp
     tests/model/consequence_clip_instance_test.cpp
     tests/model/iterance_test.cpp
     # Value scaling
