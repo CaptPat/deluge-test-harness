@@ -335,6 +335,7 @@ add_executable(HarnessTests
     tests/model/container_vectors_test.cpp
     tests/dsp/delay_buffer_test.cpp
     tests/gui/l10n_test.cpp
+    tests/gui/notes_state_test.cpp
     tests/util/c_string_array_test.cpp
     # DX7/FM, containers, HID, model leaves
     tests/dsp/dx7_synth_test.cpp

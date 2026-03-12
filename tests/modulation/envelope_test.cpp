@@ -285,32 +285,65 @@ TEST(EnvelopeTest, fastReleaseIsFasterThanNormalRelease) {
 // ── Sustain-zero clamp (bug fix validation) ──────────────────────────
 
 TEST(EnvelopeTest, sustainZeroDoesNotGoNegative) {
-	// Bug: when sustain=0, smoothedSustain could go negative due to
-	// the smoothing formula: add_saturate(smoothedSustain, n * ((0 - smoothedSustain) >> 9))
-	// Fix: clamp smoothedSustain to >= 0 after smoothing
+	// Bug: when sustain=0 and smoothedSustain is in [1, numSamples-1], the
+	// arithmetic right shift (-S) >> 9 floors to -1 (not 0), so the delta
+	// overshoots past zero: new_S = S + numSamples*(-1) = S - numSamples.
+	// Fix: clamp smoothedSustain to >= 0 after smoothing.
+	//
+	// With constant numSamples, smoothedSustain is always a multiple of
+	// numSamples (starts at 0, steps by numSamples*delta). In real firmware,
+	// numSamples varies per render call. We use numSamples=1 to break the
+	// alignment, then numSamples=128 to trigger the overshoot.
 	Envelope env;
 	env.noteOn(true); // direct to decay, lastValue = INT32_MAX
 
-	// Drive through decay into sustain with sustain=0
-	int maxIter = 1000;
+	// Phase 1: drive through decay into sustain with numSamples=128
+	int maxIter = 2000;
 	while (env.state == EnvelopeStage::DECAY && maxIter-- > 0) {
-		env.render(128, 0, 500, 0, 500, decayTableSmall8);
+		env.render(128, 0, 500, 1000, 500, decayTableSmall8);
 	}
 	CHECK_STATE(EnvelopeStage::SUSTAIN, env.state);
 
-	// Render many blocks at sustain=0 — lastValue must never go negative
-	for (int i = 0; i < 100; i++) {
+	// Let smoothedSustain settle (it's a multiple of 128 at this point)
+	for (int i = 0; i < 50; i++) {
+		env.render(128, 0, 500, 1000, 500, decayTableSmall8);
+	}
+
+	// Phase 2: use numSamples=1 with sustain=0 to decay smoothedSustain
+	// by 1 at a time, breaking the 128-alignment. After a few renders,
+	// smoothedSustain is no longer a multiple of 128.
+	for (int i = 0; i < 3; i++) {
+		env.render(1, 0, 500, 0, 500, decayTableSmall8);
+	}
+
+	// Phase 3: now use numSamples=128 with sustain=0. smoothedSustain is
+	// misaligned, so when it reaches [1, 127], the step of -128 overshoots.
+	// Without the clamp fix, lastValue goes negative.
+	for (int i = 0; i < 200; i++) {
 		env.render(128, 0, 500, 0, 500, decayTableSmall8);
 		CHECK(env.lastValue >= 0);
 	}
 }
 
 TEST(EnvelopeTest, decayWithZeroSustainStaysNonNegative) {
-	// Even during the decay phase with sustain=0, smoothedSustain should
-	// be clamped so lastValue doesn't underflow
+	// Same bug but in the DECAY stage: smoothedSustain is smoothed toward
+	// the sustain target. With sustain=0 and small positive smoothedSustain,
+	// the arithmetic right shift overshoots.
 	Envelope env;
-	env.noteOn(true);
+	env.noteOn(true); // direct to decay
 
+	// Build up smoothedSustain with moderate sustain, using numSamples=128
+	for (int i = 0; i < 100; i++) {
+		env.render(128, 0, 100, 1000, 500, decayTableSmall8);
+	}
+
+	// Use numSamples=1 with sustain=0 to break 128-alignment
+	for (int i = 0; i < 3; i++) {
+		env.render(1, 0, 100, 0, 500, decayTableSmall8);
+	}
+
+	// Now numSamples=128 with sustain=0 — misaligned smoothedSustain
+	// will overshoot past zero without the clamp fix
 	for (int i = 0; i < 200; i++) {
 		env.render(128, 0, 100, 0, 500, decayTableSmall8);
 		CHECK(env.lastValue >= 0);
