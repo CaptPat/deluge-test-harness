@@ -41,6 +41,9 @@ public:
 	int32_t insideWorldTickMagnitude = 1;
 	int32_t insideWorldTickMagnitudeOffsetFromBPM = 0;
 
+	// clip_minder.cpp: transitionToArrangerOrSession
+	int32_t lastClipInstanceEnteredStartPos = -1;
+
 	// Phase 10: consequence system stubs
 	int8_t swingAmount = 0;
 
