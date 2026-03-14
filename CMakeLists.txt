@@ -431,6 +431,8 @@ add_executable(HarnessTests
     tests/model/clip_instance_deep_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
+    # Meta: source contract — race condition guards (upstream #3898)
+    tests/meta/sd_race_guard_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
