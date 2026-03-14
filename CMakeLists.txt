@@ -183,7 +183,8 @@ add_library(deluge_firmware_src STATIC
     # Container Data Structures
     ${FIRMWARE_SRC}/deluge/util/container/list/bidirectional_linked_list.cpp
     # quick_sorter.cpp excluded — shadow header provides x86-safe inline implementation
-    ${FIRMWARE_SRC}/deluge/util/container/hashtable/open_addressing_hash_table.cpp
+    # open_addressing_hash_table.cpp — use wrapper to fix uint32_t→uintptr_t pointer casts
+    src/mocks/hash_table_wrapper.cpp
     # HID + Model Leaves
     ${FIRMWARE_SRC}/deluge/hid/button.cpp
     ${FIRMWARE_SRC}/deluge/hid/matrix/pad.cpp
