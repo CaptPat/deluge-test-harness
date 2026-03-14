@@ -425,6 +425,10 @@ add_executable(HarnessTests
     tests/modulation/param_manager_test.cpp
     # PatchCableSet coverage
     tests/modulation/patch_cable_set_test.cpp
+    # Deep coverage: pointer array, linked list, clip instances
+    tests/util/resizeable_pointer_array_deep_test.cpp
+    tests/util/linked_list_deep_test.cpp
+    tests/model/clip_instance_deep_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )
