@@ -414,6 +414,8 @@ add_executable(HarnessTests
     tests/modulation/patcher_test.cpp
     # Param set tests
     tests/modulation/param_set_test.cpp
+    # Arpeggiator deep coverage
+    tests/modulation/arpeggiator_deep_test.cpp
     # Hash table coverage
     tests/util/hash_table_test.cpp
     # ParamCollection deep coverage
