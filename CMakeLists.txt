@@ -414,6 +414,14 @@ add_executable(HarnessTests
     tests/modulation/patcher_test.cpp
     # Param set tests
     tests/modulation/param_set_test.cpp
+    # Hash table coverage
+    tests/util/hash_table_test.cpp
+    # ParamCollection deep coverage
+    tests/modulation/param_collection_deep_test.cpp
+    # ParamManager coverage
+    tests/modulation/param_manager_test.cpp
+    # PatchCableSet coverage
+    tests/modulation/patch_cable_set_test.cpp
     # Meta: upstream overlap detection
     tests/meta/upstream_overlap_test.cpp
 )
