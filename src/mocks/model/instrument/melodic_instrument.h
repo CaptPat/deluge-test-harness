@@ -1,3 +1,3 @@
-// Shadow header replacing firmware's model/instrument/melodic_instrument.h
-// param_set.cpp includes but doesn't use directly.
+// Shadow pass-through for model/instrument/melodic_instrument.h
 #pragma once
+#include "deluge/model/instrument/melodic_instrument.h"

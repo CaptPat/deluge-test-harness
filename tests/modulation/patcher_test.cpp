@@ -10,7 +10,7 @@
 #include "modulation/patch/patch_cable.h"
 #include "modulation/patch/patch_cable_set.h"
 #include "modulation/patch/patcher.h"
-#include "processing/sound/sound.h"
+#include "processing/sound/sound_instrument.h"
 #include "util/functions.h"
 #include <cstring>
 
@@ -23,7 +23,7 @@ struct PatcherTestHelper {
 	PatchedParamSet patchedParamSet{&summaries[1]};
 	PatchCableSet patchCableSet{&summaries[2]};
 	ParamManagerForTimeline paramManager;
-	Sound sound;
+	SoundInstrument sound;
 
 	// Source values array (one per PatchSource)
 	int32_t sourceValues[kNumPatchSources]{};

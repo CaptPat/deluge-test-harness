@@ -1,14 +1,4 @@
-// Shadow header replacing firmware's model/voice/voice.h
-// The real header pulls in dsp/filter, sample_playback, voice_unison_part, etc.
-// envelope.cpp only accesses voice->paramFinalValues[envelopeIndex], so we
-// provide a minimal class with just that array.
-
+// Shadow pass-through for model/voice/voice.h
+// #include_next fails with absolute paths on MinGW, so use direct path.
 #pragma once
-#include "definitions_cxx.hpp"
-#include "modulation/params/param.h"
-#include <cstdint>
-
-class Voice {
-public:
-	int32_t paramFinalValues[deluge::modulation::params::LOCAL_LAST]{};
-};
+#include "deluge/model/voice/voice.h"

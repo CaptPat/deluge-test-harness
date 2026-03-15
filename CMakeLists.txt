@@ -72,6 +72,14 @@ add_library(deluge_mocks STATIC
     src/mocks/storage/audio_file_stubs.cpp
     src/mocks/param_set_stubs.cpp
     src/mocks/arpeggiator_stubs.cpp
+    # Phase S: Sound/Voice/SoundInstrument stubs
+    src/mocks/source_stubs.cpp
+    src/mocks/sound_stubs.cpp
+    src/mocks/voice_stubs.cpp
+    src/mocks/voice_sample_stubs.cpp
+    src/mocks/mod_controllable_audio_stubs.cpp
+    src/mocks/instrument_stubs.cpp
+    src/mocks/voice_pool_stubs.cpp
 )
 target_include_directories(deluge_mocks PUBLIC
     src/mocks
@@ -433,6 +441,8 @@ add_executable(HarnessTests
     tests/meta/upstream_overlap_test.cpp
     # Meta: source contract — race condition guards (upstream #3898)
     tests/meta/sd_race_guard_test.cpp
+    # Phase S: Sound/Voice/SoundInstrument smoke tests
+    tests/processing/sound_voice_smoke_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

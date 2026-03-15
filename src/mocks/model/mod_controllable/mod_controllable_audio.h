@@ -1,9 +1,5 @@
-// Shadow header: forward-declares ArpeggiatorSettings before
-// the real mod_controllable_audio.h uses it as a pointer parameter.
+// Shadow: forward-declares ArpeggiatorSettings before the real header uses it.
+// Uses direct include path (not #include_next) for MinGW compatibility.
 #pragma once
-
 class ArpeggiatorSettings;
-
-// The real header is found via the firmware include paths.
-// We use #include_next to skip this shadow and find the real one.
-#include_next "model/mod_controllable/mod_controllable_audio.h"
+#include "deluge/model/mod_controllable/mod_controllable_audio.h"

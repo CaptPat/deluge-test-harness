@@ -1,5 +1,3 @@
-// Shadow header replacing firmware's model/instrument/instrument.h
-// The real header pulls in io/midi/learned_midi.h and clip_instance_vector.h.
-// We provide the Output include since downstream code expects it transitively.
+// Shadow pass-through for model/instrument/instrument.h
 #pragma once
-#include "model/output.h"
+#include "deluge/model/instrument/instrument.h"

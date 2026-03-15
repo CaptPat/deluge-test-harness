@@ -4,7 +4,7 @@
 #include "CppUTest/TestHarness.h"
 #include "modulation/envelope.h"
 #include "model/voice/voice.h"
-#include "processing/sound/sound.h"
+#include "processing/sound/sound_instrument.h"
 #include "util/lookuptables/lookuptables.h"
 
 // Helper to compare EnvelopeStage (CppUTest can't print scoped enums)
@@ -125,8 +125,8 @@ TEST(EnvelopeTest, resumeAttack) {
 
 TEST(EnvelopeTest, noteOnWithVoiceAttack) {
 	Envelope env;
-	Sound sound;
-	Voice voice;
+	SoundInstrument sound;
+	Voice voice(sound);
 	// Attack below threshold → normal attack
 	voice.paramFinalValues[deluge::modulation::params::LOCAL_ENV_0_ATTACK] = 1000;
 	voice.paramFinalValues[deluge::modulation::params::LOCAL_ENV_0_SUSTAIN] = 500000;
@@ -137,8 +137,8 @@ TEST(EnvelopeTest, noteOnWithVoiceAttack) {
 
 TEST(EnvelopeTest, noteOnWithVoiceDirectDecay) {
 	Envelope env;
-	Sound sound;
-	Voice voice;
+	SoundInstrument sound;
+	Voice voice(sound);
 	// Attack above threshold (245632) → directly to DECAY
 	voice.paramFinalValues[deluge::modulation::params::LOCAL_ENV_0_ATTACK] = 300000;
 	voice.paramFinalValues[deluge::modulation::params::LOCAL_ENV_0_SUSTAIN] = 500000;
@@ -149,7 +149,7 @@ TEST(EnvelopeTest, noteOnWithVoiceDirectDecay) {
 
 TEST(EnvelopeTest, noteOff) {
 	Envelope env;
-	Sound sound;
+	SoundInstrument sound;
 	ParamManagerForTimeline* pm = nullptr;
 	env.noteOn(false);
 	CHECK_STATE(EnvelopeStage::ATTACK, env.state);
