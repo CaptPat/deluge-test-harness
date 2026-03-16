@@ -4,6 +4,7 @@
 #include "processing/sound/sound_instrument.h"
 #include "model/instrument/melodic_instrument.h"
 #include "model/model_stack.h"
+#include "model/voice/voice.h"
 
 // ── Instrument stubs ───────────────────────────────────────────────────
 void Instrument::beenEdited(bool) {}
@@ -53,7 +54,23 @@ ModelStackWithAutoParam* MelodicInstrument::getModelStackWithParam(ModelStackWit
                                                                    deluge::modulation::params::Kind, bool, bool) {
 	return nullptr;
 }
-void MelodicInstrument::releaseSustainedVoices(ModelStackWithTimelineCounter*) {}
+// Real implementations — pedal voice release methods
+void MelodicInstrument::releaseSustainedVoices(ModelStackWithTimelineCounter* modelStack) {
+	if (type != OutputType::SYNTH) {
+		return;
+	}
+	auto* soundInstrument = static_cast<SoundInstrument*>(this);
+	ModelStackWithNoteRow* modelStackWithNoteRow = modelStack->addNoteRow(0, nullptr);
+	ModelStackWithThreeMainThings* modelStackWith3Things =
+	    modelStackWithNoteRow->addOtherTwoThings(toModControllable(), getParamManager(modelStack->song));
+	ModelStackWithSoundFlags* modelStackWithSoundFlags = modelStackWith3Things->addSoundFlags();
+
+	for (const auto& voice : soundInstrument->voices()) {
+		if ((voice->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None) {
+			voice->noteOff(modelStackWithSoundFlags, true, true);
+		}
+	}
+}
 
 // ── SoundInstrument stubs ──────────────────────────────────────────────
 SoundInstrument::SoundInstrument() : MelodicInstrument(OutputType::SYNTH) {}

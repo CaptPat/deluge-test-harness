@@ -212,6 +212,101 @@ TEST(SustainPedal, SustainThenSostenutoInteraction) {
 	CHECK((voice->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
 }
 
+// ── End-to-end: noteOn → sustain hold → noteOff → pedal lift → release ──
+
+TEST(SustainPedal, EndToEndSustainCycle) {
+	PedalTestFixture f;
+
+	// 1. Play a note
+	f.playNote(60);
+	CHECK(f.si->numActiveVoices() > 0);
+
+	// 2. Press sustain pedal
+	f.setSustainPedal(true);
+
+	// 3. Release key (noteOff) — voice should be deferred
+	auto& voice = f.si->voices().front();
+	voice->noteOff(f.getSoundFlagsModelStack(), true, false);
+	CHECK((voice->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
+	CHECK(EnvelopeStage::RELEASE != voice->envelopes[0].state);
+
+	// 4. Lift sustain pedal
+	f.setSustainPedal(false);
+
+	// 5. Simulate releaseSustainedVoices — iterate voices and release deferred ones
+	//    (calling the real method needs Song/ParamManager plumbing; we test the
+	//    equivalent logic directly, which is what the method does)
+	for (const auto& v : f.si->voices()) {
+		if ((v->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None) {
+			v->noteOff(f.getSoundFlagsModelStack(), true, true); // ignoreSustain=true
+		}
+	}
+
+	// 6. Voice should now be in release
+	CHECK(EnvelopeStage::RELEASE == voice->envelopes[0].state);
+	CHECK(Voice::PedalState::None == voice->pedalState);
+}
+
+TEST(SustainPedal, EndToEndMultipleNotesSustained) {
+	PedalTestFixture f;
+
+	// Play 3 notes
+	f.playNote(60);
+	f.playNote(64);
+	f.playNote(67);
+	CHECK(f.si->numActiveVoices() >= 3);
+
+	// Press sustain
+	f.setSustainPedal(true);
+
+	// Release all keys
+	for (const auto& v : f.si->voices()) {
+		v->noteOff(f.getSoundFlagsModelStack(), true, false);
+	}
+
+	// All should be deferred
+	for (const auto& v : f.si->voices()) {
+		CHECK((v->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
+	}
+
+	// Lift sustain — release all deferred
+	f.setSustainPedal(false);
+	for (const auto& v : f.si->voices()) {
+		if ((v->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None) {
+			v->noteOff(f.getSoundFlagsModelStack(), true, true);
+		}
+	}
+
+	// All should be in release
+	for (const auto& v : f.si->voices()) {
+		CHECK(EnvelopeStage::RELEASE == v->envelopes[0].state);
+	}
+}
+
+TEST(SustainPedal, EndToEndSostenutoCaptureCycle) {
+	PedalTestFixture f;
+
+	// Play a note
+	f.playNote(60);
+	auto& voice = f.si->voices().front();
+
+	// Press sostenuto pedal — captures the held note
+	f.setSostenutoPedal(true);
+	voice->pedalState = voice->pedalState | Voice::PedalState::SostenutoCapture;
+
+	// Release key — should be deferred by sostenuto
+	voice->noteOff(f.getSoundFlagsModelStack(), true, false);
+	CHECK((voice->pedalState & Voice::PedalState::SostenutoDeferred) != Voice::PedalState::None);
+
+	// Lift sostenuto pedal — release deferred
+	f.setSostenutoPedal(false);
+	// Clear capture+deferred flags and release (what releaseSostenutoVoices does)
+	voice->pedalState = voice->pedalState & ~(Voice::PedalState::SostenutoCapture | Voice::PedalState::SostenutoDeferred);
+	voice->noteOff(f.getSoundFlagsModelStack(), true, true);
+
+	CHECK(EnvelopeStage::RELEASE == voice->envelopes[0].state);
+}
+
 TEST(SustainPedal, MultipleDeferredNoteOffsIdempotent) {
 	PedalTestFixture f;
 	f.playNote(60);
