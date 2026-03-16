@@ -3,10 +3,15 @@
 // We implement the constructor/destructor and critical methods; rendering is stubbed.
 
 #include "processing/sound/sound.h"
+#include "model/model_stack.h"
+#include "model/voice/voice.h"
 #include "processing/engines/audio_engine.h"
+#include "modulation/arpeggiator.h"
 #include "modulation/params/param.h"
 #include "modulation/params/param_manager.h"
 #include "modulation/params/param_set.h"
+#include <algorithm>
+#include <ranges>
 
 namespace params = deluge::modulation::params;
 
@@ -55,21 +60,219 @@ void Sound::render(ModelStackWithThreeMainThings*, std::span<StereoSample>, int3
                    SampleRecorder*) {}
 void Sound::setSkippingRendering(bool newSkipping) { skippingRendering = newSkipping; }
 
-// ── Voice management stubs ─────────────────────────────────────────────
+// ── Voice management — real implementations ────────────────────────────
 void Sound::voiceUnassigned(ModelStackWithSoundFlags*) {}
-void Sound::noteOn(ModelStackWithThreeMainThings*, ArpeggiatorBase*, int32_t, int16_t const*, uint32_t, int32_t,
-                   uint32_t, int32_t, int32_t) {}
-void Sound::noteOff(ModelStackWithThreeMainThings*, ArpeggiatorBase*, int32_t) {}
-void Sound::allNotesOff(ModelStackWithThreeMainThings*, ArpeggiatorBase*) {}
-void Sound::noteOnPostArpeggiator(ModelStackWithSoundFlags*, int32_t, int32_t, int32_t, int16_t const*, uint32_t,
-                                  int32_t, uint32_t, int32_t) {}
-void Sound::noteOffPostArpeggiator(ModelStackWithSoundFlags*, int32_t) {}
 void Sound::killAllVoices() { voices_.clear(); }
 bool Sound::anyNoteIsOn() { return !voices_.empty(); }
 bool Sound::allowNoteTails(ModelStackWithSoundFlags*, bool) { return true; }
 void Sound::prepareForHibernation() { killAllVoices(); }
 
-void Sound::freeActiveVoice(const ActiveVoice& /*voice*/, ModelStackWithSoundFlags*, bool) {}
+void Sound::freeActiveVoice(const ActiveVoice& voice, ModelStackWithSoundFlags* modelStack, bool erase) {
+	if (erase) {
+		for (auto it = voices_.begin(); it != voices_.end(); ++it) {
+			if (it->get() == voice.get()) {
+				voices_.erase(it);
+				return;
+			}
+		}
+	}
+}
+
+// Real noteOn — routes through arpeggiator, allocates voices
+void Sound::noteOn(ModelStackWithThreeMainThings* modelStack, ArpeggiatorBase* arpeggiator, int32_t noteCodePreArp,
+                   int16_t const* mpeValues, uint32_t sampleSyncLength, int32_t ticksLate, uint32_t samplesLate,
+                   int32_t velocity, int32_t fromMIDIChannel) {
+	ParamManagerForTimeline* paramManager = (ParamManagerForTimeline*)modelStack->paramManager;
+	ModelStackWithSoundFlags* modelStackWithSoundFlags = modelStack->addSoundFlags();
+
+	if (!((synthMode == SynthMode::RINGMOD) || (modelStackWithSoundFlags->checkSourceEverActive(0))
+	      || (modelStackWithSoundFlags->checkSourceEverActive(1))
+	      || (paramManager->getPatchedParamSet()->params[params::LOCAL_NOISE_VOLUME].containsSomething(-2147483648))))
+	    [[unlikely]] {
+		return;
+	}
+
+	UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
+
+	// CC67 soft pedal — reduce velocity when active
+	if (unpatchedParams->getValue(params::UNPATCHED_SOFT_PEDAL) >= 0) {
+		velocity = std::max((velocity * 2 + 1) / 3, int32_t{1});
+	}
+
+	ArpeggiatorSettings* arpSettings = getArpSettings();
+	if (arpSettings != nullptr) {
+		arpSettings->updateParamsFromUnpatchedParamSet(unpatchedParams);
+	}
+
+	getArpBackInTimeAfterSkippingRendering(arpSettings);
+
+	ArpReturnInstruction instruction;
+	instruction.sampleSyncLengthOn = sampleSyncLength;
+
+	arpeggiator->noteOn(arpSettings, noteCodePreArp, velocity, &instruction, fromMIDIChannel, mpeValues);
+
+	if (instruction.arpNoteOn != nullptr) {
+		for (int32_t n = 0; n < ARP_MAX_INSTRUCTION_NOTES; n++) {
+			if (instruction.arpNoteOn->noteCodeOnPostArp[n] == ARP_NOTE_NONE) {
+				break;
+			}
+
+			if (AudioEngine::allowedToStartVoice()) {
+				invertReversed = instruction.invertReversed;
+				noteOnPostArpeggiator(modelStackWithSoundFlags, noteCodePreArp,
+				                      instruction.arpNoteOn->noteCodeOnPostArp[n], instruction.arpNoteOn->velocity,
+				                      mpeValues, instruction.sampleSyncLengthOn, ticksLate, samplesLate,
+				                      fromMIDIChannel);
+				instruction.arpNoteOn->noteStatus[n] = ArpNoteStatus::PLAYING;
+			}
+		}
+	}
+}
+
+// Real noteOff — routes through arpeggiator
+void Sound::noteOff(ModelStackWithThreeMainThings* modelStack, ArpeggiatorBase* arpeggiator, int32_t noteCode) {
+	ModelStackWithSoundFlags* modelStackWithSoundFlags = modelStack->addSoundFlags();
+	ArpeggiatorSettings* arpSettings = getArpSettings();
+
+	ArpReturnInstruction instruction;
+	arpeggiator->noteOff(arpSettings, noteCode, &instruction);
+
+	for (int32_t n = 0; n < ARP_MAX_INSTRUCTION_NOTES; n++) {
+		if (instruction.glideNoteCodeOffPostArp[n] == ARP_NOTE_NONE) {
+			break;
+		}
+		noteOffPostArpeggiator(modelStackWithSoundFlags, instruction.glideNoteCodeOffPostArp[n]);
+	}
+	for (int32_t n = 0; n < ARP_MAX_INSTRUCTION_NOTES; n++) {
+		if (instruction.noteCodeOffPostArp[n] == ARP_NOTE_NONE) {
+			break;
+		}
+		noteOffPostArpeggiator(modelStackWithSoundFlags, instruction.noteCodeOffPostArp[n]);
+	}
+
+	reassessRenderSkippingStatus(modelStackWithSoundFlags);
+}
+
+void Sound::allNotesOff(ModelStackWithThreeMainThings* modelStack, ArpeggiatorBase* arpeggiator) {
+	invertReversed = false;
+	ModelStackWithSoundFlags* modelStackWithSoundFlags = modelStack->addSoundFlags();
+	noteOffPostArpeggiator(modelStackWithSoundFlags, ALL_NOTES_OFF);
+	arpeggiator->reset();
+}
+
+// Real noteOnPostArpeggiator — voice allocation and polyphony handling
+void Sound::noteOnPostArpeggiator(ModelStackWithSoundFlags* modelStack, int32_t noteCodePreArp,
+                                  int32_t noteCodePostArp, int32_t velocity, int16_t const* mpeValues,
+                                  uint32_t sampleSyncLength, int32_t ticksLate, uint32_t samplesLate,
+                                  int32_t fromMIDIChannel) {
+	const ActiveVoice* voiceToReuse = nullptr;
+	const ActiveVoice* voiceForLegato = nullptr;
+	auto* paramManager = static_cast<ParamManagerForTimeline*>(modelStack->paramManager);
+
+	// If not polyphonic, stop existing voices
+	if (!voices_.empty() && polyphonic != PolyphonyMode::POLY) [[unlikely]] {
+		for (auto it = voices_.begin(); it != voices_.end();) {
+			ActiveVoice& voice = *it;
+			if (polyphonic != PolyphonyMode::MONO && voice->envelopes[0].state < EnvelopeStage::RELEASE
+			    && allowNoteTails(modelStack, true)) {
+				voiceForLegato = &voice;
+				break;
+			}
+
+			bool needs_unassign =
+			    synthMode == SynthMode::FM
+			    || std::ranges::any_of(std::views::iota(0, kNumSources),
+			                           [&](int32_t s) {
+				                           return isSourceActiveCurrently(s, paramManager)
+				                                  && sources[s].oscType != OscType::SAMPLE;
+			                           })
+			    || (voice->envelopes[0].state != EnvelopeStage::FAST_RELEASE
+			        && !voice->doFastRelease(SOFT_CULL_INCREMENT));
+
+			if (needs_unassign) {
+				if (voiceToReuse != nullptr) {
+					this->freeActiveVoice(voice, modelStack, false);
+					it = voices_.erase(it);
+					continue;
+				}
+				voice->unassignStuff(false);
+				voiceToReuse = &voice;
+			}
+			it++;
+		}
+	}
+
+	if (polyphonic == PolyphonyMode::LEGATO && voiceForLegato) [[unlikely]] {
+		(*voiceForLegato)->changeNoteCode(modelStack, noteCodePreArp, noteCodePostArp, fromMIDIChannel, mpeValues);
+	}
+	else {
+		try {
+			const ActiveVoice& voice = voiceToReuse != nullptr ? *voiceToReuse : this->acquireVoice();
+			int32_t envelopePositions[kNumEnvelopes];
+
+			if (voiceToReuse != nullptr) [[unlikely]] {
+				for (int32_t e = 0; e < kNumEnvelopes; e++) {
+					envelopePositions[e] = (*voiceToReuse)->envelopes[e].lastValue;
+				}
+			}
+			else {
+				reassessRenderSkippingStatus(modelStack);
+				voice->randomizeOscPhases(*this);
+			}
+
+			if (sideChainSendLevel != 0) [[unlikely]] {
+				AudioEngine::registerSideChainHit(sideChainSendLevel);
+			}
+
+			bool success = voice->noteOn(modelStack, noteCodePreArp, noteCodePostArp, velocity, sampleSyncLength,
+			                             ticksLate, samplesLate, voiceToReuse == nullptr, fromMIDIChannel, mpeValues);
+			if (success) {
+				if (voiceToReuse != nullptr) {
+					for (int32_t e = 0; e < kNumEnvelopes; e++) {
+						voice->envelopes[e].resumeAttack(envelopePositions[e]);
+					}
+				}
+			}
+			else {
+				this->checkVoiceExists(voice, "E199");
+				this->freeActiveVoice(voice, modelStack);
+			}
+		} catch (deluge::exception e) {
+			return;
+		}
+	}
+
+	lastNoteCode = noteCodePostArp;
+
+	// MIDI output skipped in test harness — no midiEngine available
+}
+
+// Real noteOffPostArpeggiator — voice release with sustain pedal support
+void Sound::noteOffPostArpeggiator(ModelStackWithSoundFlags* modelStack, int32_t noteCode) {
+	// MIDI output skipped in test harness
+
+	if (voices_.empty()) {
+		return;
+	}
+
+	ArpeggiatorSettings* arpSettings = getArpSettings();
+
+	for (const ActiveVoice& voice : voices_) {
+		if ((voice->noteCodeAfterArpeggiation == noteCode || noteCode == ALL_NOTES_OFF)
+		    && voice->envelopes[0].state < EnvelopeStage::RELEASE) {
+
+			if ((arpSettings != nullptr) && arpSettings->mode != ArpMode::OFF) {
+				goto justSwitchOff;
+			}
+
+			// LEGATO/MONO note-stack handling skipped for simplicity in test harness
+			// (would need full Arpeggiator note lookup + SoundInstrument cast)
+
+justSwitchOff:
+			voice->noteOff(modelStack, true, noteCode == ALL_NOTES_OFF);
+		}
+	}
+}
 const Sound::ActiveVoice& Sound::acquireVoice() noexcept(false) {
 	auto voice = AudioEngine::VoicePool::get().acquire(*this);
 	voices_.push_back(std::move(voice));
@@ -292,6 +495,22 @@ void Sound::applyWavetableModKnobDefaults(int32_t sourceIndex, bool wasAlreadyWa
 		modKnobs[7][0].paramDescriptor.setToHaveParamOnly(params::LOCAL_OSC_B_WAVE_INDEX);
 	}
 }
+
+// Private methods needed by noteOn
+void Sound::getArpBackInTimeAfterSkippingRendering(ArpeggiatorSettings* arpSettings) {
+	if (skippingRendering) {
+		if (arpSettings != nullptr && arpSettings->mode != ArpMode::OFF) {
+			uint32_t phaseIncrement =
+			    arpSettings->getPhaseIncrement(paramFinalValues[params::GLOBAL_ARP_RATE - params::FIRST_GLOBAL]);
+			getArp()->gatePos +=
+			    (phaseIncrement >> 8) * (AudioEngine::audioSampleTimer - timeStartedSkippingRenderingArp);
+			timeStartedSkippingRenderingArp = AudioEngine::audioSampleTimer;
+		}
+	}
+}
+
+void Sound::stopSkippingRendering(ArpeggiatorSettings*) {}
+void Sound::startSkippingRendering(ModelStackWithSoundFlags*) {}
 
 void Sound::deleteMultiRange(int32_t, int32_t) {}
 uint32_t Sound::getSyncedLFOPhaseIncrement(const LFOConfig&) { return 0; }

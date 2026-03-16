@@ -4,6 +4,7 @@
 
 #include "model/model_stack.h"
 #include "model/note/note_row.h"
+#include "processing/sound/sound.h"
 #include "clip_mocks.h"
 #include <cstring>
 
@@ -116,13 +117,32 @@ bool ModelStackWithParamId::isParam(deluge::modulation::params::Kind kind, delug
 }
 
 // ── ModelStackWithSoundFlags ─────────────────────────────────────────────
+// Real implementations — needed for Sound::noteOn() which checks sources before proceeding.
 
 bool ModelStackWithSoundFlags::checkSourceEverActiveDisregardingMissingSample(int32_t s) {
-	return false;
+	int32_t flagValue = soundFlags[SOUND_FLAG_SOURCE_0_ACTIVE_DISREGARDING_MISSING_SAMPLE + s];
+	if (flagValue == FLAG_TBD) {
+		flagValue = ((Sound*)modControllable)
+		                ->isSourceActiveEverDisregardingMissingSample(s, (ParamManagerForTimeline*)paramManager);
+		soundFlags[SOUND_FLAG_SOURCE_0_ACTIVE_DISREGARDING_MISSING_SAMPLE + s] = flagValue;
+	}
+	return flagValue;
 }
 
 bool ModelStackWithSoundFlags::checkSourceEverActive(int32_t s) {
-	return false;
+	int32_t flagValue = soundFlags[SOUND_FLAG_SOURCE_0_ACTIVE + s];
+	if (flagValue == FLAG_TBD) {
+		flagValue = checkSourceEverActiveDisregardingMissingSample(s);
+		if (flagValue) {
+			Sound* sound = (Sound*)modControllable;
+			flagValue =
+			    sound->synthMode == SynthMode::FM
+			    || (sound->sources[s].oscType != OscType::SAMPLE && sound->sources[s].oscType != OscType::WAVETABLE)
+			    || sound->sources[s].hasAtLeastOneAudioFileLoaded();
+		}
+		soundFlags[SOUND_FLAG_SOURCE_0_ACTIVE + s] = flagValue;
+	}
+	return flagValue;
 }
 
 // ── Free functions ───────────────────────────────────────────────────────

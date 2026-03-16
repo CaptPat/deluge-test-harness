@@ -75,6 +75,7 @@ inline void logAction(char const*) {}
 inline void logAction(int32_t) {}
 inline void feedReverbBackdoorForGrain(int32_t l, int32_t r) { (void)l; (void)r; }
 inline void registerSideChainHit(int32_t /*strength*/) {}
+inline bool allowedToStartVoice() { return true; } // Always allow in tests
 inline VoiceSample* solicitVoiceSample() { return nullptr; }
 inline void voiceSampleUnassigned(VoiceSample* /*voiceSample*/) {}
 inline TimeStretcher* solicitTimeStretcher() { return nullptr; }
