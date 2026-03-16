@@ -453,8 +453,7 @@ add_executable(HarnessTests
     tests/processing/sound_voice_smoke_test.cpp
     # Phase S2: setSynthMode regression test (#4232 patch cables after FM switch)
     tests/processing/synth_mode_test.cpp
-    # Phase S2: wavetable mod knob overwrite regression test (#61)
-    tests/processing/wavetable_mod_knob_test.cpp
+    # wavetable mod knob test removed — fix moved to sample_browser.cpp (UI, not testable in harness)
     # Phase S2: Sound state query method tests
     tests/processing/sound_state_test.cpp
     # Phase S3: noteOn/noteOff lifecycle tests

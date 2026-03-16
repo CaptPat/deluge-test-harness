@@ -521,24 +521,6 @@ ModelStackWithAutoParam* Sound::getParamFromModEncoder(int32_t, ModelStackWithTh
 	return nullptr;
 }
 ModelStackWithAutoParam* Sound::getParamFromMIDIKnob(MIDIKnob&, ModelStackWithThreeMainThings*) { return nullptr; }
-// Real implementation — extracted from SampleBrowser::doLoadAsWaveTable() for testability
-void Sound::applyWavetableModKnobDefaults(int32_t sourceIndex, bool wasAlreadyWavetable) {
-	if (wasAlreadyWavetable) {
-		return;
-	}
-
-	if (sourceIndex == 0) { // Osc A
-		modKnobs[7][1].paramDescriptor.setToHaveParamOnly(params::LOCAL_OSC_A_WAVE_INDEX);
-
-		if (!modKnobs[7][0].paramDescriptor.isSetToParamWithNoSource(params::LOCAL_OSC_B_WAVE_INDEX)) {
-			modKnobs[7][0].paramDescriptor.setToHaveParamAndSource(params::LOCAL_OSC_A_WAVE_INDEX,
-			                                                       PatchSource::LFO_LOCAL_1);
-		}
-	}
-	else { // Osc B
-		modKnobs[7][0].paramDescriptor.setToHaveParamOnly(params::LOCAL_OSC_B_WAVE_INDEX);
-	}
-}
 
 // Private methods needed by noteOn
 void Sound::getArpBackInTimeAfterSkippingRendering(ArpeggiatorSettings* arpSettings) {
