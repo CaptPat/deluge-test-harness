@@ -443,6 +443,8 @@ add_executable(HarnessTests
     tests/meta/sd_race_guard_test.cpp
     # Phase S: Sound/Voice/SoundInstrument smoke tests
     tests/processing/sound_voice_smoke_test.cpp
+    # Phase S2: setSynthMode regression test (#4232 patch cables after FM switch)
+    tests/processing/synth_mode_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

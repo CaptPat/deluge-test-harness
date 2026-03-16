@@ -150,7 +150,60 @@ bool Sound::modEncoderButtonAction(uint8_t, bool, ModelStackWithThreeMainThings*
 void Sound::polyphonicExpressionEventOnChannelOrNote(int32_t, int32_t, int32_t, MIDICharacteristic) {}
 int16_t Sound::getMaxOscTranspose(InstrumentClip*) { return 96; }
 int16_t Sound::getMinOscTranspose() { return -96; }
-void Sound::setSynthMode(SynthMode value, Song*) { synthMode = value; }
+// Real implementation — the fix for #4232 (patch cables broken after FM switch)
+// requires filter modes to be updated BEFORE setupPatchingForAllParamManagers().
+void Sound::setSynthMode(SynthMode value, Song* song) {
+	killAllVoices();
+
+	SynthMode oldSynthMode = synthMode;
+	synthMode = value;
+
+	// Update filter modes BEFORE setting up patching, so patch cables correctly
+	// reflect the new synth mode's filter state (fixes #4232)
+	if (synthMode == SynthMode::FM && oldSynthMode != SynthMode::FM) {
+		lpfMode = FilterMode::OFF;
+		hpfMode = FilterMode::OFF;
+	}
+	else if (synthMode != SynthMode::FM && oldSynthMode == SynthMode::FM) {
+		if (lpfMode == FilterMode::OFF) {
+			lpfMode = FilterMode::TRANSISTOR_24DB;
+		}
+		if (hpfMode == FilterMode::OFF) {
+			hpfMode = FilterMode::HPLADDER;
+		}
+	}
+
+	setupPatchingForAllParamManagers(song);
+
+	// Change mod knob functions over. Switching *to* FM...
+	if (synthMode == SynthMode::FM && oldSynthMode != SynthMode::FM) {
+		for (int32_t f = 0; f < kNumModButtons; f++) {
+			if (modKnobs[f][0].paramDescriptor.isJustAParam() && modKnobs[f][1].paramDescriptor.isJustAParam()) {
+				int32_t p0 = modKnobs[f][0].paramDescriptor.getJustTheParam();
+				int32_t p1 = modKnobs[f][1].paramDescriptor.getJustTheParam();
+
+				if ((p0 == params::LOCAL_LPF_RESONANCE || p0 == params::LOCAL_HPF_RESONANCE
+				     || p0 == params::UNPATCHED_START + params::UNPATCHED_BASS)
+				    && (p1 == params::LOCAL_LPF_FREQ || p1 == params::LOCAL_HPF_FREQ
+				        || p1 == params::UNPATCHED_START + params::UNPATCHED_TREBLE)) {
+					modKnobs[f][0].paramDescriptor.setToHaveParamOnly(params::LOCAL_MODULATOR_1_VOLUME);
+					modKnobs[f][1].paramDescriptor.setToHaveParamOnly(params::LOCAL_MODULATOR_0_VOLUME);
+				}
+			}
+		}
+	}
+
+	// ... and switching *from* FM...
+	if (synthMode != SynthMode::FM && oldSynthMode == SynthMode::FM) {
+		for (int32_t f = 0; f < kNumModButtons; f++) {
+			if (modKnobs[f][0].paramDescriptor.isSetToParamWithNoSource(params::LOCAL_MODULATOR_1_VOLUME)
+			    && modKnobs[f][1].paramDescriptor.isSetToParamWithNoSource(params::LOCAL_MODULATOR_0_VOLUME)) {
+				modKnobs[f][0].paramDescriptor.setToHaveParamOnly(params::LOCAL_LPF_RESONANCE);
+				modKnobs[f][1].paramDescriptor.setToHaveParamOnly(params::LOCAL_LPF_FREQ);
+			}
+		}
+	}
+}
 int32_t Sound::hasAnyTimeStretchSyncing(ParamManagerForTimeline*, bool, int32_t) { return 0; }
 int32_t Sound::hasCutOrLoopModeSamples(ParamManagerForTimeline*, int32_t, bool*) { return 0; }
 bool Sound::hasCutModeSamples(ParamManagerForTimeline*) { return false; }
