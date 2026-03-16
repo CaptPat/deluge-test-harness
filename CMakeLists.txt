@@ -462,6 +462,8 @@ add_executable(HarnessTests
     tests/processing/sustain_pedal_test.cpp
     # Voice lifecycle stress tests: polyphony, mono, rapid cycling
     tests/processing/voice_lifecycle_test.cpp
+    # Sound method coverage: setSynthMode with voices, allNotesOff, sources
+    tests/processing/sound_method_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
