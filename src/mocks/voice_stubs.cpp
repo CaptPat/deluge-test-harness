@@ -37,8 +37,18 @@ void Voice::unassignStuff(bool) {}
 bool Voice::render(ModelStackWithSoundFlags*, int32_t*, int32_t, bool, bool, uint32_t, bool, bool, int32_t) {
 	return true; // voice still active
 }
-bool Voice::noteOn(ModelStackWithSoundFlags*, int32_t, int32_t, uint8_t, uint32_t, int32_t, uint32_t, bool, int32_t,
-                   const int16_t*) {
+bool Voice::noteOn(ModelStackWithSoundFlags* modelStack, int32_t noteCodePreArp, int32_t noteCodePostArp,
+                   uint8_t velocity, uint32_t sampleSyncLength, int32_t ticksLate, uint32_t samplesLate,
+                   bool resetEnvelopes, int32_t fromMIDIChannel, const int16_t* mpeValues) {
+	// Store key state so tests can observe it
+	inputCharacteristics[util::to_underlying(MIDICharacteristic::NOTE)] = noteCodePreArp;
+	inputCharacteristics[util::to_underlying(MIDICharacteristic::CHANNEL)] = fromMIDIChannel;
+	noteCodeAfterArpeggiation = noteCodePostArp;
+
+	// Store velocity as patch source (same as real firmware)
+	sourceValues[util::to_underlying(PatchSource::VELOCITY)] =
+	    (velocity == 128) ? 2147483647 : ((int32_t)velocity - 64) * 33554432;
+
 	return true;
 }
 // Real noteOff with sustain/sostenuto pedal logic

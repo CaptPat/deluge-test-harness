@@ -194,6 +194,91 @@ TEST(SustainPedal, SostenutoCapturedNoteDefers) {
 	CHECK(EnvelopeStage::RELEASE != voice->envelopes[0].state);
 }
 
+// ── CC67 Soft Pedal velocity reduction ─────────────────────────────────
+
+TEST(SustainPedal, SoftPedalReducesVelocity) {
+	PedalTestFixture f;
+
+	// Play a note WITHOUT soft pedal — check stored velocity
+	f.playNote(60, 127);
+	auto& voiceNormal = f.si->voices().front();
+	int32_t normalVelocitySource = voiceNormal->sourceValues[util::to_underlying(PatchSource::VELOCITY)];
+
+	f.si->killAllVoices();
+
+	// Play same note WITH soft pedal — velocity should be reduced
+	f.unpatchedParamSet->params[params::UNPATCHED_SOFT_PEDAL].setCurrentValueBasicForSetup(2147483647);
+	f.playNote(60, 127);
+	auto& voiceSoft = f.si->voices().front();
+	int32_t softVelocitySource = voiceSoft->sourceValues[util::to_underlying(PatchSource::VELOCITY)];
+
+	// Soft pedal reduces velocity to ~2/3: velocity = max((127 * 2 + 1) / 3, 1) = 85
+	// Normal: (127 - 64) * 33554432 = 2113929216
+	// Soft:   (85 - 64) * 33554432 = 704643072
+	CHECK(softVelocitySource < normalVelocitySource);
+
+	// Verify the exact math: (127 * 2 + 1) / 3 = 85
+	int32_t expectedSoftVelocity = 85;
+	int32_t expectedSoftSource = ((int32_t)expectedSoftVelocity - 64) * 33554432;
+	CHECK_EQUAL(expectedSoftSource, softVelocitySource);
+}
+
+TEST(SustainPedal, SoftPedalMinVelocityClamps) {
+	PedalTestFixture f;
+
+	// Soft pedal with velocity 1 — should clamp to 1, not 0
+	f.unpatchedParamSet->params[params::UNPATCHED_SOFT_PEDAL].setCurrentValueBasicForSetup(2147483647);
+	f.playNote(60, 1);
+	auto& voice = f.si->voices().front();
+	int32_t velSource = voice->sourceValues[util::to_underlying(PatchSource::VELOCITY)];
+	// (1 * 2 + 1) / 3 = 1 → clamped to max(1, 1) = 1
+	int32_t expectedSource = ((int32_t)1 - 64) * 33554432;
+	CHECK_EQUAL(expectedSource, velSource);
+}
+
+TEST(SustainPedal, SoftPedalOffNoReduction) {
+	PedalTestFixture f;
+
+	// Soft pedal OFF (default) — velocity unchanged
+	f.playNote(60, 100);
+	auto& voice = f.si->voices().front();
+	int32_t velSource = voice->sourceValues[util::to_underlying(PatchSource::VELOCITY)];
+	int32_t expectedSource = ((int32_t)100 - 64) * 33554432;
+	CHECK_EQUAL(expectedSource, velSource);
+}
+
+// ── CC66 additional sostenuto tests ────────────────────────────────────
+
+TEST(SustainPedal, SostenutoDoesNotCaptureNewNotes) {
+	PedalTestFixture f;
+
+	// Play note A, press sostenuto (captures A)
+	f.playNote(60);
+	f.setSostenutoPedal(true);
+	for (const auto& v : f.si->voices()) {
+		if (v->envelopes[0].state < EnvelopeStage::RELEASE) {
+			v->pedalState = v->pedalState | Voice::PedalState::SostenutoCapture;
+		}
+	}
+
+	// Play note B AFTER sostenuto is down — should NOT be captured
+	f.playNote(67);
+	CHECK(f.si->numActiveVoices() >= 2);
+
+	// The second voice should NOT have SostenutoCapture
+	bool secondHasCapture = false;
+	int count = 0;
+	for (const auto& v : f.si->voices()) {
+		if (count > 0) { // skip first voice
+			if ((v->pedalState & Voice::PedalState::SostenutoCapture) != Voice::PedalState::None) {
+				secondHasCapture = true;
+			}
+		}
+		count++;
+	}
+	CHECK(!secondHasCapture);
+}
+
 // ── Edge cases ─────────────────────────────────────────────────────────
 
 TEST(SustainPedal, SustainThenSostenutoInteraction) {
