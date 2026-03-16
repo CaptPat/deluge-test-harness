@@ -4,7 +4,7 @@ x86 regression test harness for [Synthstrom Deluge firmware](https://github.com/
 
 ## Scope
 
-This harness provides **broad regression coverage** of Deluge firmware logic on x86. It compiles ~120 real firmware `.cpp` files against a mock hardware layer and exercises them with 145+ CppUTest test cases. Development is guided by gcov line coverage and static analysis rather than any specific PR.
+This harness provides **broad regression coverage** of Deluge firmware logic on x86. It compiles ~120 real firmware `.cpp` files against a mock hardware layer and exercises them with 1950+ CppUTest test cases. Development is guided by gcov line coverage and static analysis rather than any specific PR.
 
 **What's tested:**
 
