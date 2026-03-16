@@ -29,6 +29,16 @@ Voice::Voice(Sound& s) : sound(s), patcher({}, sourceValues, paramFinalValues) {
 	sourceWaveIndexesLastTime.fill(0);
 	sourceValues.fill(0);
 	paramFinalValues.fill(0);
+	// Initialize envelopes to ATTACK (a freshly-sounded voice)
+	for (auto& env : envelopes) {
+		env.state = EnvelopeStage::ATTACK;
+		env.pos = 0;
+		env.lastValue = 0;
+	}
+	// Initialize source guides
+	for (auto& g : guides) {
+		g.noteOffReceived = false;
+	}
 }
 
 // ── Lifecycle stubs ────────────────────────────────────────────────────

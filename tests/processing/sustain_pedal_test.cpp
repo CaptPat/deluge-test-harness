@@ -298,8 +298,139 @@ TEST(SustainPedal, SustainThenSostenutoInteraction) {
 }
 
 // ── End-to-end: noteOn → sustain hold → noteOff → pedal lift → release ──
+// These tests exercise the full releaseSustainedVoices() path through
+// MelodicInstrument, which is what actually runs when CC64 goes to 0.
+// Separate test group to avoid interaction with direct Voice::noteOff tests.
 
-TEST(SustainPedal, EndToEndSustainCycle) {
+TEST_GROUP(SustainPedalE2E){};
+
+TEST(SustainPedalE2E, ReleaseSustainedVoicesReleasesDeferred) {
+	PedalTestFixture f;
+
+	// Wire up getParamManager so releaseSustainedVoices can build its ModelStack
+	f.si->testParamManager_ = f.paramManager;
+
+	// Play note, hold sustain, send noteOff → deferred
+	f.playNote(60);
+	f.setSustainPedal(true);
+	auto& voice = f.si->voices().front();
+	voice->noteOff(f.getSoundFlagsModelStack(), true, false);
+	CHECK((voice->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
+	CHECK(EnvelopeStage::RELEASE != voice->envelopes[0].state);
+
+	// Lift sustain pedal
+	f.setSustainPedal(false);
+
+	// Call releaseSustainedVoices — the actual CC64=0 handler
+	auto* ms = (ModelStackWithTimelineCounter*)f.modelStackMemory;
+	ms->song = nullptr;
+	ms->setTimelineCounter(nullptr);
+	f.si->releaseSustainedVoices(ms);
+
+	// Voice should now be released
+	CHECK(EnvelopeStage::RELEASE == voice->envelopes[0].state);
+}
+
+TEST(SustainPedalE2E, ReleaseSustainedVoicesMultipleNotes) {
+	PedalTestFixture f;
+	f.si->testParamManager_ = f.paramManager;
+
+	// Play 3 notes, hold sustain, send noteOff for all
+	f.playNote(60);
+	f.playNote(64);
+	f.playNote(67);
+	CHECK(f.si->numActiveVoices() >= 3);
+
+	f.setSustainPedal(true);
+
+	for (const auto& v : f.si->voices()) {
+		v->noteOff(f.getSoundFlagsModelStack(), true, false);
+	}
+
+	// All should be deferred
+	int deferredCount = 0;
+	for (const auto& v : f.si->voices()) {
+		if ((v->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None) {
+			deferredCount++;
+		}
+	}
+	CHECK(deferredCount >= 3);
+
+	// Lift pedal and call releaseSustainedVoices
+	f.setSustainPedal(false);
+	auto* ms = (ModelStackWithTimelineCounter*)f.modelStackMemory;
+	ms->song = nullptr;
+	ms->setTimelineCounter(nullptr);
+	f.si->releaseSustainedVoices(ms);
+
+	// All should now be in release
+	int releasedCount = 0;
+	for (const auto& v : f.si->voices()) {
+		if (v->envelopes[0].state == EnvelopeStage::RELEASE) {
+			releasedCount++;
+		}
+	}
+	CHECK(releasedCount >= 3);
+}
+
+TEST(SustainPedalE2E, ReleaseSustainedVoicesIgnoresNonDeferred) {
+	PedalTestFixture f;
+	f.si->testParamManager_ = f.paramManager;
+
+	// Play two notes — defer only one
+	f.playNote(60);
+	f.playNote(67);
+
+	f.setSustainPedal(true);
+
+	// Only noteOff the first voice
+	auto it = f.si->voices().begin();
+	(*it)->noteOff(f.getSoundFlagsModelStack(), true, false);
+	CHECK(((*it)->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
+
+	// Second voice is still sounding normally (no noteOff sent)
+	++it;
+	CHECK(Voice::PedalState::None == (*it)->pedalState);
+
+	// Lift pedal and release
+	f.setSustainPedal(false);
+	auto* ms = (ModelStackWithTimelineCounter*)f.modelStackMemory;
+	ms->song = nullptr;
+	ms->setTimelineCounter(nullptr);
+	f.si->releaseSustainedVoices(ms);
+
+	// First voice: released. Second voice: untouched (still sounding)
+	auto it2 = f.si->voices().begin();
+	CHECK(EnvelopeStage::RELEASE == (*it2)->envelopes[0].state);
+	++it2;
+	CHECK(EnvelopeStage::RELEASE != (*it2)->envelopes[0].state);
+}
+
+TEST(SustainPedalE2E, FullCyclePlayDeferReleasePlayAgain) {
+	PedalTestFixture f;
+	f.si->testParamManager_ = f.paramManager;
+
+	// Cycle 1: play → sustain → noteOff → release
+	f.playNote(60);
+	f.setSustainPedal(true);
+	auto& v1 = f.si->voices().front();
+	v1->noteOff(f.getSoundFlagsModelStack(), true, false);
+	CHECK((v1->pedalState & Voice::PedalState::SustainDeferred) != Voice::PedalState::None);
+
+	f.setSustainPedal(false);
+	auto* ms = (ModelStackWithTimelineCounter*)f.modelStackMemory;
+	ms->song = nullptr;
+	ms->setTimelineCounter(nullptr);
+	f.si->releaseSustainedVoices(ms);
+	CHECK(EnvelopeStage::RELEASE == v1->envelopes[0].state);
+
+	// Cycle 2: play a new note (sustain off) — should work normally
+	f.playNote(64);
+	int activeCount = f.si->numActiveVoices();
+	CHECK(activeCount >= 2); // old voice in release + new voice
+}
+
+TEST(SustainPedalE2E, EndToEndSustainCycle) {
 	PedalTestFixture f;
 
 	// 1. Play a note
@@ -332,7 +463,7 @@ TEST(SustainPedal, EndToEndSustainCycle) {
 	CHECK(Voice::PedalState::None == voice->pedalState);
 }
 
-TEST(SustainPedal, EndToEndMultipleNotesSustained) {
+TEST(SustainPedalE2E, EndToEndMultipleNotesSustained) {
 	PedalTestFixture f;
 
 	// Play 3 notes
@@ -368,7 +499,7 @@ TEST(SustainPedal, EndToEndMultipleNotesSustained) {
 	}
 }
 
-TEST(SustainPedal, EndToEndSostenutoCaptureCycle) {
+TEST(SustainPedalE2E, EndToEndSostenutoCaptureCycle) {
 	PedalTestFixture f;
 
 	// Play a note
@@ -392,7 +523,7 @@ TEST(SustainPedal, EndToEndSostenutoCaptureCycle) {
 	CHECK(EnvelopeStage::RELEASE == voice->envelopes[0].state);
 }
 
-TEST(SustainPedal, MultipleDeferredNoteOffsIdempotent) {
+TEST(SustainPedalE2E, MultipleDeferredNoteOffsIdempotent) {
 	PedalTestFixture f;
 	f.playNote(60);
 	f.setSustainPedal(true);

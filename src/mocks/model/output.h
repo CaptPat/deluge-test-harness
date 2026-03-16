@@ -81,7 +81,10 @@ public:
 	virtual void deleteBackedUpParamManagers(Song*) {}
 	virtual void prepareForHibernationOrDeletion() {}
 	virtual char const* getXMLTag() = 0;
-	virtual ParamManager* getParamManager(Song*) { return nullptr; }
+	virtual ParamManager* getParamManager(Song*) { return testParamManager_; }
+
+	// Test hook: set this to provide a ParamManager without needing a real Clip/Song
+	ParamManager* testParamManager_{nullptr};
 	virtual char const* getNameXMLTag() { return "name"; }
 
 	virtual void offerReceivedNote(ModelStackWithTimelineCounter*, MIDICable&, bool, int32_t, int32_t, int32_t, bool,
