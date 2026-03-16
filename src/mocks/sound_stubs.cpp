@@ -114,7 +114,6 @@ bool Sound::setModFXType(ModFXType newType) {
 	modFXType_ = newType;
 	return true;
 }
-bool Sound::hasFilters() { return true; }
 void Sound::resyncGlobalLFOs() {}
 int8_t Sound::getKnobPos(uint8_t, ParamManagerForTimeline*, uint32_t, TimelineCounter*) { return 0; }
 int32_t Sound::getKnobPosBig(int32_t, ParamManagerForTimeline*, uint32_t, TimelineCounter*) { return 0; }
@@ -131,14 +130,71 @@ void Sound::setModulatorTranspose(int32_t m, int32_t value, ModelStackWithSoundF
 void Sound::setModulatorCents(int32_t m, int32_t value, ModelStackWithSoundFlags*) {
 	modulatorCents[m] = static_cast<int8_t>(value);
 }
-bool Sound::isSourceActiveCurrently(int32_t, ParamManagerForTimeline*) { return true; }
-bool Sound::isSourceActiveEverDisregardingMissingSample(int32_t, ParamManager*) { return true; }
-bool Sound::isSourceActiveEver(int32_t, ParamManager*) { return true; }
-bool Sound::isNoiseActiveEver(ParamManagerForTimeline*) { return false; }
-bool Sound::envelopeHasSustainCurrently(int32_t, ParamManagerForTimeline*) { return true; }
-bool Sound::envelopeHasSustainEver(int32_t, ParamManagerForTimeline*) { return true; }
-bool Sound::renderingOscillatorSyncCurrently(ParamManagerForTimeline*) { return false; }
-bool Sound::renderingOscillatorSyncEver(ParamManager*) { return false; }
+// Real implementations — Sound state query methods
+bool Sound::hasFilters() {
+	return (lpfMode != FilterMode::OFF || hpfMode != FilterMode::OFF);
+}
+bool Sound::isSourceActiveCurrently(int32_t s, ParamManagerForTimeline* paramManager) {
+	return (synthMode == SynthMode::RINGMOD
+	        || getSmoothedPatchedParamValue(params::LOCAL_OSC_A_VOLUME + s, *paramManager) != -2147483648)
+	       && (synthMode == SynthMode::FM || sources[s].oscType != OscType::SAMPLE
+	           || sources[s].hasAtLeastOneAudioFileLoaded());
+}
+
+bool Sound::isSourceActiveEverDisregardingMissingSample(int32_t s, ParamManager* paramManager) {
+	return (synthMode == SynthMode::RINGMOD
+	        || paramManager->getPatchedParamSet()->params[params::LOCAL_OSC_A_VOLUME + s].containsSomething(-2147483648)
+	        || renderingOscillatorSyncEver(paramManager));
+}
+
+bool Sound::isSourceActiveEver(int32_t s, ParamManager* paramManager) {
+	return isSourceActiveEverDisregardingMissingSample(s, paramManager)
+	       && (synthMode == SynthMode::FM || sources[s].oscType != OscType::SAMPLE
+	           || sources[s].hasAtLeastOneAudioFileLoaded());
+}
+
+bool Sound::isNoiseActiveEver(ParamManagerForTimeline* paramManager) {
+	return (synthMode != SynthMode::FM
+	        && paramManager->getPatchedParamSet()->params[params::LOCAL_NOISE_VOLUME].containsSomething(-2147483648));
+}
+
+bool Sound::envelopeHasSustainCurrently(int32_t e, ParamManagerForTimeline* paramManager) {
+	PatchedParamSet* patchedParams = paramManager->getPatchedParamSet();
+	return (patchedParams->getValue(params::LOCAL_ENV_0_SUSTAIN + e) != -2147483648
+	        || patchedParams->getValue(params::LOCAL_ENV_0_DECAY + e)
+	               > patchedParams->getValue(params::LOCAL_ENV_0_RELEASE + e));
+}
+
+bool Sound::envelopeHasSustainEver(int32_t e, ParamManagerForTimeline* paramManager) {
+	PatchedParamSet* patchedParams = paramManager->getPatchedParamSet();
+	return (patchedParams->params[params::LOCAL_ENV_0_SUSTAIN + e].containsSomething(-2147483648)
+	        || patchedParams->params[params::LOCAL_ENV_0_DECAY + e].isAutomated()
+	        || patchedParams->params[params::LOCAL_ENV_0_RELEASE + e].isAutomated()
+	        || patchedParams->getValue(params::LOCAL_ENV_0_DECAY + e)
+	               > patchedParams->getValue(params::LOCAL_ENV_0_RELEASE + e));
+}
+
+bool Sound::renderingOscillatorSyncCurrently(ParamManagerForTimeline* paramManager) {
+	if (!oscillatorSync) {
+		return false;
+	}
+	if (synthMode == SynthMode::FM) {
+		return false;
+	}
+	return (getSmoothedPatchedParamValue(params::LOCAL_OSC_B_VOLUME, *paramManager) != -2147483648
+	        || synthMode == SynthMode::RINGMOD);
+}
+
+bool Sound::renderingOscillatorSyncEver(ParamManager* paramManager) {
+	if (!oscillatorSync) {
+		return false;
+	}
+	if (synthMode == SynthMode::FM) {
+		return false;
+	}
+	return (paramManager->getPatchedParamSet()->params[params::LOCAL_OSC_B_VOLUME].containsSomething(-2147483648)
+	        || synthMode == SynthMode::RINGMOD);
+}
 void Sound::setupAsBlankSynth(ParamManager*, bool) {}
 void Sound::setupAsDefaultSynth(ParamManager*) {}
 void Sound::setupAsSample(ParamManagerForTimeline*) {}

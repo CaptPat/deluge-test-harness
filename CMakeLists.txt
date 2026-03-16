@@ -447,6 +447,8 @@ add_executable(HarnessTests
     tests/processing/synth_mode_test.cpp
     # Phase S2: wavetable mod knob overwrite regression test (#61)
     tests/processing/wavetable_mod_knob_test.cpp
+    # Phase S2: Sound state query method tests
+    tests/processing/sound_state_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
