@@ -3,7 +3,11 @@
 // We provide constructor/destructor and critical lifecycle methods.
 
 #include "model/voice/voice.h"
+#include "model/model_stack.h"
 #include "processing/sound/sound.h"
+#include "modulation/params/param_set.h"
+
+namespace params = deluge::modulation::params;
 
 // Real voice constructor — needs Sound&
 Voice::Voice(Sound& s) : sound(s), patcher({}, sourceValues, paramFinalValues) {
@@ -37,7 +41,44 @@ bool Voice::noteOn(ModelStackWithSoundFlags*, int32_t, int32_t, uint8_t, uint32_
                    const int16_t*) {
 	return true;
 }
-void Voice::noteOff(ModelStackWithSoundFlags*, bool, bool) {}
+// Real noteOff with sustain/sostenuto pedal logic
+void Voice::noteOff(ModelStackWithSoundFlags* modelStack, bool allowReleaseStage, bool ignoreSustain) {
+	Sound& sound = *static_cast<Sound*>(modelStack->modControllable);
+
+	// Check sustain pedal — if active, defer the note-off instead of releasing
+	if (!ignoreSustain && !sound.isDrum()) {
+		auto* paramManager = static_cast<ParamManagerForTimeline*>(modelStack->paramManager);
+		UnpatchedParamSet* unpatchedParams = paramManager->getUnpatchedParamSet();
+		int32_t sustainValue = unpatchedParams->getValue(params::UNPATCHED_SUSTAIN_PEDAL);
+		if (sustainValue >= 0) {
+			pedalState = pedalState | PedalState::SustainDeferred;
+			return;
+		}
+
+		// Check sostenuto pedal — only holds notes that were captured when pedal went down
+		if ((pedalState & PedalState::SostenutoCapture) != PedalState::None) {
+			int32_t sostenutoValue = unpatchedParams->getValue(params::UNPATCHED_SOSTENUTO_PEDAL);
+			if (sostenutoValue >= 0) {
+				pedalState = pedalState | PedalState::SostenutoDeferred;
+				return;
+			}
+		}
+	}
+	pedalState = pedalState & ~(PedalState::SustainDeferred | PedalState::SostenutoDeferred);
+
+	for (int32_t s = 0; s < kNumSources; s++) {
+		guides[s].noteOffReceived = true;
+	}
+
+	// Envelope release logic simplified for test harness
+	// (real code checks allowNoteTails, release stage, etc.)
+	if (allowReleaseStage) {
+		envelopes[0].state = EnvelopeStage::RELEASE;
+	}
+	else {
+		envelopes[0].state = EnvelopeStage::FAST_RELEASE;
+	}
+}
 void Voice::calculatePhaseIncrements(ModelStackWithSoundFlags*) {}
 bool Voice::sampleZoneChanged(ModelStackWithSoundFlags*, int32_t, MarkerType) { return true; }
 void Voice::randomizeOscPhases(const Sound&) {}
