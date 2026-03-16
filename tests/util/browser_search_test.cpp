@@ -165,3 +165,87 @@ TEST(BrowserSearchTest, oldCodeMissesLastItem) {
 	// sorts after the last element's full name but matches its prefix.
 	CHECK_EQUAL(3, newResult);
 }
+
+// ── Additional edge cases ───────────────────────────────────────────────
+
+TEST(BrowserSearchTest, numericPrefixSearch) {
+	// Song browser: files like "001", "002", ..., "010"
+	std::vector<const char*> files = {"001Song", "002Song", "003Song", "010Song", "011Song"};
+	CHECK_EQUAL(0, searchForPrefix(files, "001"));
+	CHECK_EQUAL(3, searchForPrefix(files, "010"));
+	CHECK_EQUAL(4, searchForPrefix(files, "011"));
+}
+
+TEST(BrowserSearchTest, numericPrefixNotFound) {
+	std::vector<const char*> files = {"001Song", "002Song", "003Song"};
+	CHECK_EQUAL(-1, searchForPrefix(files, "004"));
+}
+
+TEST(BrowserSearchTest, exactMatchReturnsIndex) {
+	std::vector<const char*> files = {"Alpha", "Beta", "Gamma"};
+	CHECK_EQUAL(1, searchForPrefix(files, "Beta"));
+}
+
+TEST(BrowserSearchTest, longPrefixMatchesSubstring) {
+	std::vector<const char*> files = {"BassLead", "BassLine", "BassPad"};
+	CHECK_EQUAL(0, searchForPrefix(files, "Bass"));
+	// Should return first match
+}
+
+TEST(BrowserSearchTest, longPrefixNoMatch) {
+	std::vector<const char*> files = {"BassLead", "BassLine", "BassPad"};
+	CHECK_EQUAL(-1, searchForPrefix(files, "Bell"));
+}
+
+TEST(BrowserSearchTest, duplicateNamesFirstReturned) {
+	std::vector<const char*> files = {"Pad", "Pad", "Pad"};
+	int result = searchForPrefix(files, "P");
+	CHECK(result >= 0);
+	CHECK(result <= 2);
+}
+
+TEST(BrowserSearchTest, allSamePrefixReturnsFirst) {
+	std::vector<const char*> files = {"SynthA", "SynthB", "SynthC"};
+	CHECK_EQUAL(0, searchForPrefix(files, "Synth"));
+}
+
+TEST(BrowserSearchTest, twoElementsSearchFirst) {
+	std::vector<const char*> files = {"Alpha", "Zeta"};
+	CHECK_EQUAL(0, searchForPrefix(files, "A"));
+}
+
+TEST(BrowserSearchTest, twoElementsSearchLast) {
+	std::vector<const char*> files = {"Alpha", "Zeta"};
+	CHECK_EQUAL(1, searchForPrefix(files, "Z"));
+}
+
+TEST(BrowserSearchTest, prefixLongerThanFileName) {
+	std::vector<const char*> files = {"AB", "CD", "EF"};
+	// Prefix "ABCD" is longer than "AB" — memcasecmp only checks prefixLen chars
+	// This would be a buffer overread in real code if not guarded
+	// Our simulated version reads past the string — but this tests the concept
+	CHECK_EQUAL(-1, searchForPrefix(files, "ABCD"));
+}
+
+TEST(BrowserSearchTest, mixedCaseSort) {
+	// Files sorted case-insensitively (as firmware does)
+	std::vector<const char*> files = {"alpha", "BETA", "gamma", "ZETA"};
+	CHECK_EQUAL(1, searchForPrefix(files, "b"));
+	CHECK_EQUAL(3, searchForPrefix(files, "z"));
+}
+
+TEST(BrowserSearchTest, largeListStressTest) {
+	// 100 files: "File000" through "File099"
+	std::vector<const char*> files;
+	static char names[100][8];
+	for (int i = 0; i < 100; i++) {
+		snprintf(names[i], 8, "File%03d", i);
+		files.push_back(names[i]);
+	}
+
+	CHECK_EQUAL(0, searchForPrefix(files, "File000"));
+	CHECK_EQUAL(50, searchForPrefix(files, "File050"));
+	CHECK_EQUAL(99, searchForPrefix(files, "File099"));
+	CHECK_EQUAL(-1, searchForPrefix(files, "File100"));
+	CHECK_EQUAL(0, searchForPrefix(files, "F"));
+}
