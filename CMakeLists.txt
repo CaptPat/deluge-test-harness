@@ -464,6 +464,8 @@ add_executable(HarnessTests
     tests/processing/voice_lifecycle_test.cpp
     # Sound method coverage: setSynthMode with voices, allNotesOff, sources
     tests/processing/sound_method_test.cpp
+    # Multisample transpose retrigger regression test
+    tests/processing/multisample_transpose_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

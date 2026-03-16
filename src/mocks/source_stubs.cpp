@@ -25,7 +25,22 @@ void Source::detachAllAudioFiles() {}
 Error Source::loadAllSamples(bool /*mayActuallyReadFiles*/) { return Error::NONE; }
 void Source::setReversed(bool /*newReversed*/) {}
 int32_t Source::getRangeIndex(int32_t /*note*/) { return 0; }
-MultiRange* Source::getRange(int32_t /*note*/) { return nullptr; }
+// Real implementation — needed for retriggerVoicesForTransposeChange() tests
+MultiRange* Source::getRange(int32_t note) {
+	if (ranges.getNumElements() == 1) {
+		return ranges.getElement(0);
+	}
+	else if (ranges.getNumElements() == 0) {
+		return nullptr;
+	}
+	else {
+		defaultRangeI = ranges.search(note, GREATER_OR_EQUAL);
+		if (defaultRangeI == ranges.getNumElements()) {
+			defaultRangeI--;
+		}
+		return ranges.getElement(defaultRangeI);
+	}
+}
 MultiRange* Source::getOrCreateFirstRange() { return nullptr; }
 bool Source::hasAtLeastOneAudioFileLoaded() { return false; }
 void Source::doneReadingFromFile(Sound* /*sound*/) {}
