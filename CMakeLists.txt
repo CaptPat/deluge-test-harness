@@ -453,6 +453,8 @@ add_executable(HarnessTests
     tests/processing/sound_state_test.cpp
     # Phase S3: noteOn/noteOff lifecycle tests
     tests/processing/note_lifecycle_test.cpp
+    tests/processing/note_debug_test.cpp
+    tests/processing/pool_debug_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
