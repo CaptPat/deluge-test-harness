@@ -460,6 +460,8 @@ add_executable(HarnessTests
     tests/processing/note_lifecycle_test.cpp
     # Phase S3: CC64/CC66 sustain pedal regression tests
     tests/processing/sustain_pedal_test.cpp
+    # Voice lifecycle stress tests: polyphony, mono, rapid cycling
+    tests/processing/voice_lifecycle_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
