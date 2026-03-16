@@ -53,7 +53,7 @@ struct TransposeFixture {
 
 	~TransposeFixture() {
 		si->killAllVoices();
-		// Intentionally leak — same MinGW GMA workaround as note_lifecycle_test
+		std::erase(AudioEngine::sounds, static_cast<Sound*>(si));
 	}
 
 	ModelStackWithThreeMainThings* getModelStack() {

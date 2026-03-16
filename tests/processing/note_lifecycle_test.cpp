@@ -48,10 +48,9 @@ struct NoteTestFixture {
 
 	~NoteTestFixture() {
 		si->killAllVoices();
-		// Intentionally leak si and param sets — SoundInstrument destructor
-		// crashes on MinGW due to fast_allocator/GMA interaction during
-		// cleanup of internal vectors. All tests verify behavior before this
-		// point. CppUTest leak detection is disabled.
+		// Can't delete si (MinGW GMA crash), but deregister from AudioEngine
+		// to prevent stale pointers from affecting subsequent tests.
+		std::erase(AudioEngine::sounds, static_cast<Sound*>(si));
 	}
 
 	ModelStackWithThreeMainThings* getModelStack() {

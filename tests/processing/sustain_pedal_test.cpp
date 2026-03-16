@@ -49,7 +49,7 @@ struct PedalTestFixture {
 
 	~PedalTestFixture() {
 		si->killAllVoices();
-		// Leak si to avoid MinGW GMA destruction crash
+		std::erase(AudioEngine::sounds, static_cast<Sound*>(si));
 	}
 
 	ModelStackWithSoundFlags* getSoundFlagsModelStack() {

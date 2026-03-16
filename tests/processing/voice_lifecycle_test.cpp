@@ -43,7 +43,7 @@ struct VoiceLifecycleFixture {
 
 	~VoiceLifecycleFixture() {
 		si->killAllVoices();
-		// Leak si to avoid MinGW GMA destruction crash
+		std::erase(AudioEngine::sounds, static_cast<Sound*>(si));
 	}
 
 	ModelStackWithThreeMainThings* getModelStack() {
