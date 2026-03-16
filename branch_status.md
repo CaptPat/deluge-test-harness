@@ -36,14 +36,13 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (18)
+## Bugfix branches (17)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
 | `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | --             |
 | `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | --             |
 | `bugfix/browser-text-search-last-item`         | active     | has-test    | Last item unfindable in browser text search; same off-by-one + `notFound` label placement                              | `tests/util/browser_search_test.cpp`                                                        | --             |
-| `bugfix/dx7-shift-name-shortcut`               | **no-op**  | --          | Fix was reverted in same branch (net zero diff)                                                                        | --                                                                                          | --             |
 | `bugfix/envelope-sustain-zero-stuck`            | active     | has-test    | `smoothedSustain` goes negative when sustain=0, causing stuck notes                                                    | `tests/modulation/envelope_test.cpp` (real `Envelope::render()` with alignment-break trick) | --             |
 | `bugfix/grid-dim-pads-after-new-clip`           | active     | gui-only    | Missing `skipGreyoutFade()` before explode animation                                                                   | none                                                                                        | --             |
 | `bugfix/lpf-drive-label-display`                | active     | has-test    | Filter morph labels show "morph" when should show "drive"/"FM" for ladder filters                                      | `tests/modulation/filter_morph_label_test.cpp` (family classification + label logic)        | --             |
@@ -74,7 +73,7 @@ To verify a bugfix branch is still needed, either:
 
 | Branch                                    | Reason                                                     |
 | ----------------------------------------- | ---------------------------------------------------------- |
-| `bugfix/dx7-shift-name-shortcut`          | No-op: fix was reverted in same branch                     |
+| `bugfix/dx7-shift-name-shortcut`          | Already fixed upstream via PR #2720 (merged 2024-09-29)    |
 | `bugfix/audio-source-track-mute-cleanup`  | Already in upstream (no PR needed)                         |
 | `bugfix/granular-copy-ctor-uninit-buffer` | Fixed upstream via PR #4371                                |
 | `bugfix/granular-destructor-dealloc`      | Reported as #4358                                          |
