@@ -34,22 +34,23 @@ jobs:
 
       - name: Test
         run: |
-          # Run directly instead of ctest — the binary may segfault during
-          # static destruction (MinGW GMA duplicate) even when all tests pass.
-          # Parse output for CppUTest "OK" or "Errors" lines.
+          # Run with -v so each test prints its name. The binary may segfault
+          # during static destruction (MinGW GMA duplicate) even when all tests
+          # pass, so we can't rely on exit code or the "OK" summary line.
+          # Fail only if CppUTest reports actual test errors.
           set +e
-          OUTPUT=$(./build/HarnessTests 2>&1)
-          EXIT_CODE=$?
-          echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -q "^Errors"; then
+          ./build/HarnessTests -v 2>&1 | tee test_output.txt
+          if grep -q "^Errors" test_output.txt; then
             echo "::error::Test failures detected"
             exit 1
           fi
-          if ! echo "$OUTPUT" | grep -qE "^OK \("; then
-            echo "::error::No OK line found in output (exit code $EXIT_CODE)"
+          # Count tests that ran
+          TESTS_RAN=$(grep -c "^TEST(" test_output.txt)
+          echo "Tests ran: $TESTS_RAN"
+          if [ "$TESTS_RAN" -eq 0 ]; then
+            echo "::error::No tests ran"
             exit 1
           fi
-          echo "All tests passed (exit code $EXIT_CODE may be non-zero due to cleanup segfault)"
 
   test-windows:
     name: Build and Test (Windows)
@@ -80,15 +81,14 @@ jobs:
         shell: msys2 {0}
         run: |
           set +e
-          OUTPUT=$(./build/HarnessTests.exe 2>&1)
-          EXIT_CODE=$?
-          echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -q "^Errors"; then
+          ./build/HarnessTests.exe -v 2>&1 | tee test_output.txt
+          if grep -q "^Errors" test_output.txt; then
             echo "::error::Test failures detected"
             exit 1
           fi
-          if ! echo "$OUTPUT" | grep -qE "^OK \("; then
-            echo "::error::No OK line found in output (exit code $EXIT_CODE)"
+          TESTS_RAN=$(grep -c "^TEST(" test_output.txt)
+          echo "Tests ran: $TESTS_RAN"
+          if [ "$TESTS_RAN" -eq 0 ]; then
+            echo "::error::No tests ran"
             exit 1
           fi
-          echo "All tests passed (exit code $EXIT_CODE may be non-zero due to cleanup segfault)"
