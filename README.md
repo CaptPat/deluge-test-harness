@@ -4,7 +4,7 @@ x86 regression test harness for [Synthstrom Deluge firmware](https://github.com/
 
 ## Scope
 
-This harness provides **broad regression coverage** of Deluge firmware logic on x86. It compiles ~120 real firmware `.cpp` files against a mock hardware layer and exercises them with 1625+ CppUTest tests. Development is guided by gcov line coverage and static analysis rather than any specific PR.
+This harness provides **broad regression coverage** of Deluge firmware logic on x86. It compiles ~120 real firmware `.cpp` files against a mock hardware layer and exercises them with 145+ CppUTest test cases. Development is guided by gcov line coverage and static analysis rather than any specific PR.
 
 **What's tested:**
 
@@ -33,7 +33,7 @@ This harness provides **broad regression coverage** of Deluge firmware logic on 
 ## Architecture
 
 ```text
-tests/                    Test files (CppUTest, 1625+ tests)
+tests/                    Test files (CppUTest, 145+ test cases)
 src/harness/              TestFixture — high-level test DSL
 src/mocks/                Hardware mock layer + shadow headers
 firmware/                 Git submodule → DelugeFirmware
@@ -105,6 +105,7 @@ This harness has identified several bugs in the upstream firmware. See [bug_repo
 
 ## Known Limitations
 
+- **MinGW process-exit segfault**: On MinGW/GCC, the test executable segfaults during static destruction after all tests have passed. This is caused by `GeneralMemoryAllocator::get()` using an inline static local variable, which creates duplicate instances across static library boundaries (`.a` files). The shadow header (`src/mocks/memory/general_memory_allocator.h`) moves `get()` out-of-line to mitigate this during test execution, but the process-exit teardown order still triggers a crash. **All tests run and pass correctly** — the segfault is cosmetic. CTest reports it as a failure; check the test output for the actual pass/fail count.
 - `strcmpspecial` mock omits note-name ordering (only affects file browser sort)
 - `QuickSorter`/`OpenAddressingHashTable` use `(uint32_t)memory` pointer casts — compile-only on x86-64, no runtime tests
 - `d_string.cpp` truncates 64-bit pointers — wrapped, not tested directly
