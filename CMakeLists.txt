@@ -175,7 +175,9 @@ add_library(deluge_firmware_src STATIC
     # CStringArray (search + sort using strcmpspecial)
     ${FIRMWARE_SRC}/deluge/util/container/array/c_string_array.cpp
     # Memory + Delay buffer
-    ${FIRMWARE_SRC}/deluge/memory/memory_allocator_interface.cpp
+    # memory_allocator_interface.cpp excluded — its #include "general_memory_allocator.h"
+    # resolves relative (bypassing our shadow), creating a duplicate get() static local.
+    # The mock already provides allocMaxSpeed/allocLowSpeed/allocStealable.
     ${FIRMWARE_SRC}/deluge/dsp/delay/delay_buffer.cpp
     # Localization
     ${FIRMWARE_SRC}/deluge/gui/l10n/g_english.cpp

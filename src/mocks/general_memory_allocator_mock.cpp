@@ -133,6 +133,20 @@ uint32_t CacheManager::ReclaimMemory(MemoryRegion& region, int32_t totalSizeNeed
 
 // ── C wrappers ──────────────────────────────────────────────────────────
 
+// Free-function wrappers (from memory_allocator_interface.cpp, which we exclude
+// from the build because its relative #include bypasses our shadow header).
+void* allocMaxSpeed(uint32_t requiredSize, void* thingNotToStealFrom) {
+	return GeneralMemoryAllocator::get().alloc(requiredSize, true, false, thingNotToStealFrom);
+}
+
+void* allocLowSpeed(uint32_t requiredSize, void* thingNotToStealFrom) {
+	return GeneralMemoryAllocator::get().alloc(requiredSize, false, false, thingNotToStealFrom);
+}
+
+void* allocStealable(uint32_t requiredSize, void* thingNotToStealFrom) {
+	return GeneralMemoryAllocator::get().alloc(requiredSize, false, true, thingNotToStealFrom);
+}
+
 extern "C" {
 
 void* delugeAlloc(unsigned int requiredSize, bool mayUseOnChipRam) {
