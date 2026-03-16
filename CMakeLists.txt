@@ -92,6 +92,10 @@ target_compile_options(deluge_mocks PUBLIC
     # Firmware's dsp/dx/aligned_buf.h uses intptr_t without including <cstdint>;
     # works on MinGW (transitive include) but fails on Linux GCC 14.
     "SHELL:-include cstdint"
+    # Force our shadow GMA header (with out-of-line get()) to be included BEFORE
+    # any firmware header, overriding the inline get() that creates duplicate
+    # static locals across static libraries on MinGW.
+    "SHELL:-include ${CMAKE_SOURCE_DIR}/src/mocks/memory/general_memory_allocator.h"
 )
 
 # ── Real firmware source compiled on x86 ────────────────────────────────
@@ -453,8 +457,6 @@ add_executable(HarnessTests
     tests/processing/sound_state_test.cpp
     # Phase S3: noteOn/noteOff lifecycle tests
     tests/processing/note_lifecycle_test.cpp
-    tests/processing/note_debug_test.cpp
-    tests/processing/pool_debug_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

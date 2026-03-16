@@ -51,6 +51,11 @@ MemoryRegion::MemoryRegion() = default;
 
 GeneralMemoryAllocator::GeneralMemoryAllocator() : lock(false) {}
 
+GeneralMemoryAllocator& GeneralMemoryAllocator::get() {
+	static GeneralMemoryAllocator generalMemoryAllocator;
+	return generalMemoryAllocator;
+}
+
 void* GeneralMemoryAllocator::alloc(uint32_t requiredSize, bool mayUseOnChipRam, bool makeStealable,
                                     void* thingNotToStealFrom) {
 	void* ptr = malloc(requiredSize);

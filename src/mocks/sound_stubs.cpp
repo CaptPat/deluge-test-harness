@@ -206,45 +206,19 @@ void Sound::noteOnPostArpeggiator(ModelStackWithSoundFlags* modelStack, int32_t 
 		(*voiceForLegato)->changeNoteCode(modelStack, noteCodePreArp, noteCodePostArp, fromMIDIChannel, mpeValues);
 	}
 	else {
-		try {
-			const ActiveVoice& voice = voiceToReuse != nullptr ? *voiceToReuse : this->acquireVoice();
-			int32_t envelopePositions[kNumEnvelopes];
+		const ActiveVoice& voice = this->acquireVoice();
 
-			if (voiceToReuse != nullptr) [[unlikely]] {
-				for (int32_t e = 0; e < kNumEnvelopes; e++) {
-					envelopePositions[e] = (*voiceToReuse)->envelopes[e].lastValue;
-				}
-			}
-			else {
-				reassessRenderSkippingStatus(modelStack);
-				voice->randomizeOscPhases(*this);
-			}
+		reassessRenderSkippingStatus(modelStack);
+		voice->randomizeOscPhases(*this);
 
-			if (sideChainSendLevel != 0) [[unlikely]] {
-				AudioEngine::registerSideChainHit(sideChainSendLevel);
-			}
-
-			bool success = voice->noteOn(modelStack, noteCodePreArp, noteCodePostArp, velocity, sampleSyncLength,
-			                             ticksLate, samplesLate, voiceToReuse == nullptr, fromMIDIChannel, mpeValues);
-			if (success) {
-				if (voiceToReuse != nullptr) {
-					for (int32_t e = 0; e < kNumEnvelopes; e++) {
-						voice->envelopes[e].resumeAttack(envelopePositions[e]);
-					}
-				}
-			}
-			else {
-				this->checkVoiceExists(voice, "E199");
-				this->freeActiveVoice(voice, modelStack);
-			}
-		} catch (deluge::exception e) {
-			return;
+		bool success = voice->noteOn(modelStack, noteCodePreArp, noteCodePostArp, velocity, sampleSyncLength,
+		                             ticksLate, samplesLate, true, fromMIDIChannel, mpeValues);
+		if (!success) {
+			this->freeActiveVoice(voice, modelStack);
 		}
 	}
 
 	lastNoteCode = noteCodePostArp;
-
-	// MIDI output skipped in test harness — no midiEngine available
 }
 
 // Real noteOffPostArpeggiator — voice release with sustain pedal support
