@@ -150,12 +150,18 @@ TEST(EnvelopeTest, noteOnWithVoiceDirectDecay) {
 TEST(EnvelopeTest, noteOff) {
 	Envelope env;
 	SoundInstrument sound;
-	ParamManagerForTimeline* pm = nullptr;
+
+	// Need a real ParamManager — noteOff dereferences it to check sustain
+	ParamCollectionSummary summaries[PARAM_COLLECTIONS_STORAGE_NUM]{};
+	PatchedParamSet patchedParamSet{&summaries[1]};
+	ParamManagerForTimeline pm;
+	pm.summaries[1].paramCollection = &patchedParamSet;
+
 	env.noteOn(false);
 	CHECK_STATE(EnvelopeStage::ATTACK, env.state);
 
 	// noteOff with sustain available → unconditional release
-	env.noteOff(0, &sound, pm);
+	env.noteOff(0, &sound, &pm);
 	CHECK_STATE(EnvelopeStage::RELEASE, env.state);
 }
 

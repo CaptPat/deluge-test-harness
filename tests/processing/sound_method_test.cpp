@@ -43,10 +43,8 @@ struct SoundMethodFixture {
 
 	~SoundMethodFixture() {
 		si->killAllVoices();
-		// Can't delete si — SoundInstrument destructor crashes on MinGW
-		// due to fast_allocator/GMA static local duplication across .a boundaries.
-		// Instead, manually deregister from AudioEngine::sounds to prevent
-		// stale pointers from affecting subsequent tests.
+		// Can't delete si — destructor chain hits GMA through paths other
+		// than fast_allocator. Deregister from AudioEngine::sounds instead.
 		std::erase(AudioEngine::sounds, static_cast<Sound*>(si));
 	}
 
