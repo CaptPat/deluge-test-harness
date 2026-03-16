@@ -403,6 +403,7 @@ add_executable(HarnessTests
     tests/dsp/granular_destructor_test.cpp
     tests/playback/midi_transport_toggle_test.cpp
     tests/playback/midi_follow_dedup_test.cpp
+    tests/playback/metronome_mode_test.cpp
     tests/util/browser_search_test.cpp
     tests/modulation/filter_morph_label_test.cpp
     tests/model/pedal_state_test.cpp

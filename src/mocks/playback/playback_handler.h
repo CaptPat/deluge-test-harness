@@ -13,14 +13,25 @@ enum class RecordingMode {
 	ARRANGEMENT,
 };
 
+enum class MetronomeMode : uint8_t {
+	OFF,      // Silent always
+	COUNT_IN, // Clicks during count-in only
+	ON,       // Clicks always
+};
+
 class PlaybackHandler {
 public:
+	PlaybackHandler() : metronomeOn(MetronomeMode::COUNT_IN) {}
+
 	// Returns inverse of time-per-tick; ~42949672 ≈ 120 BPM at 44.1kHz
 	uint32_t getTimePerInternalTickInverse(bool getStickyValue = false) { return 42949672; }
 
 	// Phase 10: consequence system stubs
 	RecordingMode recording = RecordingMode::OFF;
 	uint8_t playbackState = 0;
+	MetronomeMode metronomeOn;
+
+	void toggleMetronomeStatus();
 
 	float calculateBPM(float timePerTimerTick) {
 		(void)timePerTimerTick;
