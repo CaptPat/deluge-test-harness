@@ -1,12 +1,12 @@
-// Source contract test: verify that the guard against re-entrant FatFS access
-// during settings menu exit is present in the firmware source.
+// Source contract test: verify that guards against re-entrant FatFS access
+// during settings menu exit are present in the firmware source.
 //
 // Background (upstream #3898): pressing BACK rapidly while exiting Settings
 // can trigger re-entrant FatFS calls via the BACK_MENU_EXIT timer, corrupting
 // shared buffers and crashing in disk_read/move_window/dir_find.
 //
-// The fix: buttons.cpp must not arm the BACK_MENU_EXIT timer when inCardRoutine
-// is true, preventing the timer from firing during yield() inside settings saves.
+// The fix (PR #95): exitCompletely() defers settings writes via addOnceTask
+// with RESOURCE_SD, so writes only happen when the SD card is free.
 
 #include "CppUTest/TestHarness.h"
 #include <filesystem>
@@ -37,28 +37,24 @@ std::string readFile(const fs::path& path) {
 
 TEST_GROUP(SDRaceGuard){};
 
-// BACK_MENU_EXIT timer must be conditional on !sdRoutineLock.
-// If the timer is set unconditionally during an SD routine, the release event
-// may never arrive (blocked by waitingForSDRoutineToEnd), so the timer fires
-// during yield() and triggers re-entrant FatFS access.
-TEST(SDRaceGuard, backTimerGuardedBySDRoutineLock) {
-	fs::path buttonsPath = firmwareRoot() / "src" / "deluge" / "hid" / "buttons.cpp";
-	CHECK_TEXT(fs::exists(buttonsPath), "buttons.cpp not found — is firmware submodule checked out?");
+// exitCompletely() must defer settings writes via addOnceTask with RESOURCE_SD
+// instead of writing directly to the SD card (which can re-enter FatFS).
+TEST(SDRaceGuard, settingsWriteDeferredViaTaskScheduler) {
+	fs::path cppPath = firmwareRoot() / "src" / "deluge" / "gui" / "ui" / "sound_editor.cpp";
+	CHECK_TEXT(fs::exists(cppPath), "sound_editor.cpp not found — is firmware submodule checked out?");
 
-	std::string src = readFile(buttonsPath);
-	CHECK_TEXT(!src.empty(), "Failed to read buttons.cpp");
+	std::string src = readFile(cppPath);
+	CHECK_TEXT(!src.empty(), "Failed to read sound_editor.cpp");
 
-	// The BACK_MENU_EXIT timer arm must be guarded by inCardRoutine.
-	auto timerPos = src.find("BACK_MENU_EXIT");
-	CHECK_TEXT(timerPos != std::string::npos, "BACK_MENU_EXIT timer reference not found in buttons.cpp");
+	// exitCompletely() must use addOnceTask to defer the settings write
+	auto exitPos = src.find("SoundEditor::exitCompletely()");
+	CHECK_TEXT(exitPos != std::string::npos, "SoundEditor::exitCompletely() not found in sound_editor.cpp");
 
-	// Find the context around the first BACK_MENU_EXIT (the setTimer call)
-	auto contextStart = (timerPos > 200) ? timerPos - 200 : 0;
-	std::string context = src.substr(contextStart, 400);
-
-	CHECK_TEXT(context.find("inCardRoutine") != std::string::npos,
-	           "BACK_MENU_EXIT timer must be guarded by inCardRoutine to prevent "
-	           "re-entrant FatFS access during settings save (upstream #3898)");
+	// Find addOnceTask within the next ~500 chars (body of exitCompletely)
+	auto body = src.substr(exitPos, 500);
+	CHECK_TEXT(body.find("addOnceTask") != std::string::npos,
+	           "exitCompletely() must use addOnceTask to defer settings writes "
+	           "to prevent re-entrant FatFS access (PR #95, upstream #3898)");
 }
 
 // After goUpOneLevel(), SoundEditor must check if it's still the current UI.
