@@ -68,6 +68,7 @@ add_library(deluge_mocks STATIC
     src/mocks/auto_param_stubs.cpp
     src/mocks/functions_stubs.cpp
     src/mocks/playback/playback_handler.cpp
+    src/mocks/playback/mode/session.cpp
     src/mocks/cfunctions_stubs.cpp
     src/mocks/storage/audio_file_stubs.cpp
     src/mocks/param_set_stubs.cpp
@@ -487,12 +488,20 @@ add_executable(HarnessTests
     tests/storage/source_packed_filenames_test.cpp
     # Metronome count-in Session logic regression tests
     tests/playback/metronome_countin_test.cpp
+    # Session launch scheduling + PlaybackHandler state machine tests
+    tests/playback/session_logic_test.cpp
     # LearnedMIDI: construction, matching, MPE zone handling
     tests/io/learned_midi_test.cpp
+    # MIDIFollow: CC-param mapping tables, lookup logic, clip note tracking
+    tests/io/midi_follow_logic_test.cpp
     # Serializer formatting layer (XML tag/attribute/indent output)
     tests/storage/serializer_format_test.cpp
+    # XML round-trip tests (StringSerializer + StringDeserializer)
+    tests/storage/xml_roundtrip_test.cpp
     # DrumName deep coverage: linked lists, NoteRow fields, Voiced interface, search patterns
     tests/model/drum_deep_test.cpp
+    # Output deep coverage: type queries, clip instances, linked list, state flags
+    tests/model/output_deep_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

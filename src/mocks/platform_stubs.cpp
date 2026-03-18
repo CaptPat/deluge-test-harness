@@ -67,15 +67,8 @@ View view{};
 #include "model/action/action_logger.h"
 ActionLogger actionLogger;
 
-// Phase 16: Session global and defaultClipSectionColours for clip_instance.cpp
-#include "playback/mode/session.h"
-Session session;
-const RGB defaultClipSectionColours[] = {
-    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
-    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
-    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
-    RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128), RGB::monochrome(128),
-};
+// Phase 16: Session global and defaultClipSectionColours moved to
+// src/mocks/playback/mode/session.cpp
 
 // Phase 8: SampleCluster destructor stub
 // Real destructor references audioFileManager, Cluster::destroy() — too deep to compile.

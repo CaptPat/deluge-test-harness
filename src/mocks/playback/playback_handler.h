@@ -31,7 +31,13 @@ public:
 	uint8_t playbackState = 0;
 	MetronomeMode metronomeOn;
 
+	// Session launch scheduling fields (real firmware fields)
+	int64_t lastSwungTickActioned = 0;
+	int32_t swungTicksTilNextEvent = 2147483647; // INT32_MAX = no event pending
+	bool stopOutputRecordingAtLoopEnd = false;
+
 	void toggleMetronomeStatus();
+	void scheduleSwungTick() {} // No-op in mock — no timer hardware
 
 	float calculateBPM(float timePerTimerTick) {
 		(void)timePerTimerTick;
