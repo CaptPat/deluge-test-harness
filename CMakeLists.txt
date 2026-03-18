@@ -236,6 +236,8 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/hid/encoder.cpp
     # Modulation param
     ${FIRMWARE_SRC}/deluge/modulation/params/param.cpp
+    # LearnedMIDI (real firmware source, shadow headers for MIDICable/MIDIPort)
+    ${FIRMWARE_SRC}/deluge/io/midi/learned_midi.cpp
     # ModFXProcessor (unlocked by param_set.h compiling through)
     ${FIRMWARE_SRC}/deluge/model/mod_controllable/ModFXProcessor.cpp
 )
@@ -442,6 +444,8 @@ add_executable(HarnessTests
     tests/modulation/param_collection_deep_test.cpp
     # ParamManager coverage
     tests/modulation/param_manager_test.cpp
+    # ParamManager deep coverage
+    tests/modulation/param_manager_deep_test.cpp
     # PatchCableSet coverage
     tests/modulation/patch_cable_set_test.cpp
     # Deep coverage: pointer array, linked list, clip instances
@@ -467,12 +471,18 @@ add_executable(HarnessTests
     tests/processing/voice_lifecycle_test.cpp
     # Sound method coverage: setSynthMode with voices, allNotesOff, sources
     tests/processing/sound_method_test.cpp
+    # Sound deep coverage: synth mode transitions, polyphony, expression
+    tests/processing/sound_deep_test.cpp
+    # Arpeggiator edge cases: rapid cycling, gate boundaries, octave ranges
+    tests/modulation/arpeggiator_edge_test.cpp
     # Multisample transpose retrigger regression test
     tests/processing/multisample_transpose_test.cpp
     # Source packed filenames + dirPath integration tests
     tests/storage/source_packed_filenames_test.cpp
     # Metronome count-in Session logic regression tests
     tests/playback/metronome_countin_test.cpp
+    # LearnedMIDI: construction, matching, MPE zone handling
+    tests/io/learned_midi_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
