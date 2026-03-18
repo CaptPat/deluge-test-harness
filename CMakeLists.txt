@@ -502,6 +502,14 @@ add_executable(HarnessTests
     tests/model/drum_deep_test.cpp
     # Output deep coverage: type queries, clip instances, linked list, state flags
     tests/model/output_deep_test.cpp
+    # Sync + TimelineCounter deep coverage: conversions, boundaries, magnitude, clip scaling
+    tests/model/sync_deep_test.cpp
+    # Container stress tests: ResizeableArray, OrderedResizeableArray, NoteVector, CStringArray, LinkedList
+    tests/util/container_stress_test.cpp
+    # Scale/Chord deep coverage: NoteSet edge cases, MusicalKey transposition, ScaleChange, chord qualities
+    tests/model/scale_chord_deep_test.cpp
+    # ModControllableAudio deep coverage: filters, delay, stutter, compressor, modFX, cloneFrom
+    tests/model/mod_controllable_deep_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
