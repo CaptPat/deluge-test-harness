@@ -52,7 +52,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | --             |
 | `bugfix/patch-cables-fm-subtractive-switch`     | active     | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 (open)   |
 | `bugfix/reverb-filter-encoder-jumps`            | active     | has-test    | Float truncation drift in reverb HPF/LPF `readCurrentValue()` (missing `std::round()`)                                | `tests/dsp/reverb_filter_roundtrip_test.cpp` (round-trip math with real `Base` subclass)    | --             |
-| `bugfix/settings-exit-sd-race`                  | active     | has-test    | Re-entrant FatFS crash: BACK_MENU_EXIT timer armed during inCardRoutine                                                | `tests/meta/sd_race_guard_test.cpp` (source contract: `inCardRoutine` guard present)        | #3898, #2759   |
+| `bugfix/settings-exit-sd-race-v3`               | active     | has-test    | Re-entrant FatFS crash: defers settings writes via `addOnceTask(RESOURCE_SD)`                                          | `tests/meta/sd_race_guard_test.cpp` (source contract: `addOnceTask` in exitCompletely)      | #3898, #2759   |
 | `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | --             |
 | `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | --             |
@@ -85,6 +85,8 @@ To verify a bugfix branch is still needed, either:
 | `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc66-sostenuto-pedal`          |
 | `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc66-sostenuto-pedal`          |
 | `bugfix/midi-learned-param-display`       | Obsolete                                                   |
+| `bugfix/settings-exit-sd-race`            | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
+| `kastenbalg/deferred-sd-operations`       | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
 
 ## Regression test analysis
 
@@ -106,7 +108,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
 | `feature/midi-cc66-sostenuto-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
-| `bugfix/settings-exit-sd-race`            | **Good** -- source contract test verifies `inCardRoutine` guard around BACK_MENU_EXIT timer                          |
+| `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
 
 ### Remaining untested testable branches
