@@ -26,7 +26,7 @@
 
 ## Current regression delta
 
-**Zero.** All 1961 tests pass on both upstream and baseline.
+**Zero.** All 2003 tests pass on both upstream and baseline.
 The extra tests on baseline come from branch-only code (new features/APIs).
 
 To verify a bugfix branch is still needed, either:
@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (17)
+## Bugfix branches (18)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -47,23 +47,26 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/grid-dim-pads-after-new-clip`           | active     | gui-only    | Missing `skipGreyoutFade()` before explode animation                                                                   | none                                                                                        | --             |
 | `bugfix/lpf-drive-label-display`                | active     | has-test    | Filter morph labels show "morph" when should show "drive"/"FM" for ladder filters                                      | `tests/modulation/filter_morph_label_test.cpp` (family classification + label logic)        | --             |
 | `bugfix/macro-keyboard-visual-feedback`         | active     | gui-only    | Non-active macro pads not dimmed in keyboard session column                                                             | none                                                                                        | --             |
-| `bugfix/metronome-countin-toggle`               | active     | testable    | Count-in plays metronome clicks even when metronome is off (missing guard)                                             | none (needs PlaybackHandler mock expansion)                                                 | --             |
+| `bugfix/metronome-countin-toggle`               | active     | has-test    | Count-in plays metronome clicks even when metronome is off; session sync/tempoless record use wrong comparisons        | `tests/playback/metronome_countin_test.cpp` (extracted session + playback logic)             | --             |
 | `bugfix/mod-matrix-fast-scroll`                 | active     | gui-only    | OLED menu scroll jumps (wrong scroll position calc)                                                                    | none                                                                                        | --             |
 | `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | --             |
 | `bugfix/patch-cables-fm-subtractive-switch`     | active     | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 (open)   |
 | `bugfix/reverb-filter-encoder-jumps`            | active     | has-test    | Float truncation drift in reverb HPF/LPF `readCurrentValue()` (missing `std::round()`)                                | `tests/dsp/reverb_filter_roundtrip_test.cpp` (round-trip math with real `Base` subclass)    | --             |
-| `bugfix/settings-menu-exit-crash`               | active     | gui-only    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | none                                                                                        | #3898, #2759   |
+| `bugfix/settings-exit-sd-race`                  | active     | has-test    | Re-entrant FatFS crash: BACK_MENU_EXIT timer armed during inCardRoutine                                                | `tests/meta/sd_race_guard_test.cpp` (source contract: `inCardRoutine` guard present)        | #3898, #2759   |
+| `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | --             |
 | `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | --             |
 | `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                               | none                                                                                        | --             |
 | `bugfix/wavetable-mod-knob-overwrite`           | active     | has-test    | Default mod knob mappings set on every sample swap, not just wavetable transition                                      | `tests/processing/wavetable_mod_knob_test.cpp` (real `applyWavetableModKnobDefaults()`)     | --             |
 
-## Feature branches (6)
+## Feature branches (8)
 
 | Branch                                    | Status | Testability | What it adds                                                              | Harness test                                                                      | Upstream issue |
 | ----------------------------------------- | ------ | ----------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------- |
 | `feature/midi-cc66-sostenuto-pedal`       | active | has-test    | CC64 sustain + CC66 sostenuto + CC67 soft pedal with `PedalState` bitfield | `tests/model/pedal_state_test.cpp`, `tests/processing/sustain_pedal_test.cpp`    | --             |
 | `feature/midi-separate-clock-transport`   | active | has-test    | Separate MIDI clock output from transport messages                        | `tests/playback/midi_transport_toggle_test.cpp`                                   | --             |
+| `feature/multisample-dirpath-dedup`       | active | has-test    | Shared dirPath on Source; splitPath/dirMatches utilities                   | `tests/storage/source_packed_filenames_test.cpp` (Source integration + PathUtils) | --             |
+| `feature/packed-filenames`                | active | has-test    | Single-alloc PackedFilenames buffer for multisample name storage          | `tests/storage/source_packed_filenames_test.cpp` (Source integration + 88-key)    | --             |
 | `feature/per-clip-tempo-ratio`            | active | has-test    | Per-clip tempo ratio (Bresenham accumulator)                              | `tests/model/tempo_ratio_test.cpp`                                                | --             |
 | `feature/per-clip-time-signature`         | active | has-test    | Per-clip `TimeSignature` struct for metronome                             | `tests/model/time_signature_test.cpp`                                             | --             |
 | `feature/swap-select-tempo-encoders`      | active | gui-only    | Runtime toggle to swap select/tempo encoder identities                    | none                                                                              | --             |
@@ -85,7 +88,7 @@ To verify a bugfix branch is still needed, either:
 
 ## Regression test analysis
 
-**Current state:** 1961 tests, all passing. Coverage summary below.
+**Current state:** 2003 tests, all passing. Coverage summary below.
 
 ### Test quality by branch
 
@@ -96,13 +99,16 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/patch-cables-fm-subtractive-switch` | **Strong** -- real `setSynthMode()` with filter mode + mod knob assertions across all mode transitions              |
 | `bugfix/wavetable-mod-knob-overwrite`     | **Strong** -- real `applyWavetableModKnobDefaults()` with wasAlreadyWavetable guard                                  |
 | `fix/multisample-transpose-retrigger`     | **Strong** -- real `retriggerVoicesForTransposeChange()` + `Source::getRange()` with two-zone multisamples            |
+| `feature/packed-filenames`                | **Strong** -- real Source integration: getFullPath, unpackFilenames, revertToFullPaths with 88-key piano scenario     |
+| `feature/multisample-dirpath-dedup`       | **Strong** -- real splitPath/dirMatches + Source dirPath reconstruction across packed/unpacked/revert paths           |
 | `bugfix/reverb-filter-encoder-jumps`      | **Good** -- tests float round-trip math via `Base` subclass, covers the essential truncation vs rounding bug          |
 | `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
 | `feature/midi-cc66-sostenuto-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
+| `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
+| `bugfix/settings-exit-sd-race`            | **Good** -- source contract test verifies `inCardRoutine` guard around BACK_MENU_EXIT timer                          |
+| `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
 
 ### Remaining untested testable branches
 
-| Branch                                    | What's needed                                                                            |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `bugfix/metronome-countin-toggle`         | PlaybackHandler mock expansion (fix is single `if (metronomeOn)` guard in count-in path) |
+None — all testable branches now have tests.

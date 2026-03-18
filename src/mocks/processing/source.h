@@ -7,6 +7,8 @@
 #include "definitions_cxx.hpp"
 #include "model/sample/sample_controls.h"
 #include "storage/multi_range/multi_range_array.h"
+#include "util/d_string.h"
+#include "util/packed_filenames.h"
 #include "util/phase_increment_fine_tuner.h"
 
 class Sound;
@@ -29,6 +31,12 @@ public:
 	PhaseIncrementFineTuner fineTuner;
 
 	MultiRangeArray ranges;
+
+	String dirPath; // Shared directory prefix for multisample ranges (with trailing slash).
+	                // Empty when ranges have mixed directories (full paths stored per holder).
+
+	PackedFilenames packedNames; // Packed filenames for all ranges (single allocation).
+	                             // When populated, holder filePaths are empty.
 
 	DxPatch* dxPatch;
 	bool dxPatchChanged = false;
@@ -53,6 +61,20 @@ public:
 	void doneReadingFromFile(Sound* sound);
 	bool hasAnyLoopEndPoint();
 	void setOscType(OscType newType);
+	void revertToFullPaths();
+
+	/// Get filename for range at index. Returns packed name or holder filePath.
+	const char* getFilename(int32_t rangeIndex);
+
+	/// Reconstruct full path (dirPath + filename) into out. Returns Error on alloc failure.
+	Error getFullPath(int32_t rangeIndex, String& out);
+
+	/// Whether filenames are stored in packed buffer (vs per-holder Strings).
+	bool isPackedMode() const { return !packedNames.isEmpty(); }
+
+	/// Move filenames from packed buffer to per-holder filePaths. Clears packed buffer.
+	void unpackFilenames();
+
 	DxPatch* ensureDxPatch();
 
 private:

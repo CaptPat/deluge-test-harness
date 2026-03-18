@@ -138,6 +138,9 @@ add_library(deluge_firmware_src STATIC
     ${FIRMWARE_SRC}/deluge/modulation/midi/midi_param.cpp
     ${FIRMWARE_SRC}/deluge/modulation/midi/midi_param_vector.cpp
     ${FIRMWARE_SRC}/deluge/modulation/midi/midi_knob_array.cpp
+    # Path utilities, packed filenames
+    ${FIRMWARE_SRC}/deluge/util/path_utils.cpp
+    ${FIRMWARE_SRC}/deluge/util/packed_filenames.cpp
     # Utilities, Colour, Sidechain
     ${FIRMWARE_SRC}/deluge/util/semver.cpp
     ${FIRMWARE_SRC}/deluge/util/firmware_version.cpp
@@ -466,6 +469,10 @@ add_executable(HarnessTests
     tests/processing/sound_method_test.cpp
     # Multisample transpose retrigger regression test
     tests/processing/multisample_transpose_test.cpp
+    # Source packed filenames + dirPath integration tests
+    tests/storage/source_packed_filenames_test.cpp
+    # Metronome count-in Session logic regression tests
+    tests/playback/metronome_countin_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE

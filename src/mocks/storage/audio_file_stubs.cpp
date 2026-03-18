@@ -22,6 +22,12 @@ Error AudioFileHolder::loadFile(bool reversed, bool manuallySelected, bool mayAc
 	return Error::NONE;
 }
 
+Error AudioFileHolder::loadFileWithDir(String& /*dirPath*/, bool reversed, bool manuallySelected,
+                                       bool mayActuallyReadFile, int32_t clusterLoadInstruction,
+                                       FilePointer* filePointer, bool makeWaveTableWorkAtAllCosts) {
+	return Error::NONE;
+}
+
 // ── AudioFile ───────────────────────────────────────────────────────────
 void AudioFile::addReason() {
 	numReasonsToBeLoaded++;

@@ -5,8 +5,8 @@
 // can trigger re-entrant FatFS calls via the BACK_MENU_EXIT timer, corrupting
 // shared buffers and crashing in disk_read/move_window/dir_find.
 //
-// The fix: buttons.cpp must not arm the BACK_MENU_EXIT timer when sdRoutineLock
-// is held, preventing the timer from firing during yield() inside settings saves.
+// The fix: buttons.cpp must not arm the BACK_MENU_EXIT timer when inCardRoutine
+// is true, preventing the timer from firing during yield() inside settings saves.
 
 #include "CppUTest/TestHarness.h"
 #include <filesystem>
@@ -48,7 +48,7 @@ TEST(SDRaceGuard, backTimerGuardedBySDRoutineLock) {
 	std::string src = readFile(buttonsPath);
 	CHECK_TEXT(!src.empty(), "Failed to read buttons.cpp");
 
-	// The BACK_MENU_EXIT timer arm must be guarded by sdRoutineLock.
+	// The BACK_MENU_EXIT timer arm must be guarded by inCardRoutine.
 	auto timerPos = src.find("BACK_MENU_EXIT");
 	CHECK_TEXT(timerPos != std::string::npos, "BACK_MENU_EXIT timer reference not found in buttons.cpp");
 
@@ -56,8 +56,8 @@ TEST(SDRaceGuard, backTimerGuardedBySDRoutineLock) {
 	auto contextStart = (timerPos > 200) ? timerPos - 200 : 0;
 	std::string context = src.substr(contextStart, 400);
 
-	CHECK_TEXT(context.find("sdRoutineLock") != std::string::npos,
-	           "BACK_MENU_EXIT timer must be guarded by sdRoutineLock to prevent "
+	CHECK_TEXT(context.find("inCardRoutine") != std::string::npos,
+	           "BACK_MENU_EXIT timer must be guarded by inCardRoutine to prevent "
 	           "re-entrant FatFS access during settings save (upstream #3898)");
 }
 
