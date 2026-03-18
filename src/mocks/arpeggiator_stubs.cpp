@@ -1,14 +1,16 @@
 // Link-time stubs for arpeggiator.cpp serialization dependencies.
-// The arp engine logic (lines 1-1614) is the testable code; the serialization
-// tail (lines 1615-1989) uses these symbols but we don't need real implementations.
+// String conversion functions are real implementations (copied from functions.cpp)
+// to support round-trip serialization testing.
 
 #include "definitions_cxx.hpp"
 #include "util/firmware_version.h"
 
+#include <cstring>
+
 // ── song_firmware_version global ────────────────────────────────────────
 FirmwareVersion song_firmware_version = FirmwareVersion::community({0, 0, 0});
 
-// ── Arp string conversion stubs ─────────────────────────────────────────
+// ── Old arp mode conversions (stubs — old format not tested) ────────────
 ArpMode oldModeToArpMode(OldArpMode) { return ArpMode::OFF; }
 ArpNoteMode oldModeToArpNoteMode(OldArpMode) { return ArpNoteMode::UP; }
 ArpOctaveMode oldModeToArpOctaveMode(OldArpMode) { return ArpOctaveMode::UP; }
@@ -16,14 +18,125 @@ ArpOctaveMode oldModeToArpOctaveMode(OldArpMode) { return ArpOctaveMode::UP; }
 char const* oldArpModeToString(OldArpMode) { return "off"; }
 OldArpMode stringToOldArpMode(char const*) { return OldArpMode::OFF; }
 
-char const* arpModeToString(ArpMode) { return "off"; }
-ArpMode stringToArpMode(char const*) { return ArpMode::OFF; }
+// ── ArpMode ─────────────────────────────────────────────────────────────
+char const* arpModeToString(ArpMode mode) {
+	switch (mode) {
+	case ArpMode::ARP:
+		return "arp";
+	default:
+		return "off";
+	}
+}
 
-char const* arpNoteModeToString(ArpNoteMode) { return "up"; }
-ArpNoteMode stringToArpNoteMode(char const*) { return ArpNoteMode::UP; }
+ArpMode stringToArpMode(char const* string) {
+	if (!strcmp(string, "arp")) {
+		return ArpMode::ARP;
+	}
+	return ArpMode::OFF;
+}
 
-char const* arpOctaveModeToString(ArpOctaveMode) { return "up"; }
-ArpOctaveMode stringToArpOctaveMode(char const*) { return ArpOctaveMode::UP; }
+// ── ArpNoteMode ─────────────────────────────────────────────────────────
+char const* arpNoteModeToString(ArpNoteMode mode) {
+	switch (mode) {
+	case ArpNoteMode::DOWN:
+		return "down";
+	case ArpNoteMode::UP_DOWN:
+		return "upDown";
+	case ArpNoteMode::AS_PLAYED:
+		return "asPlayed";
+	case ArpNoteMode::RANDOM:
+		return "random";
+	case ArpNoteMode::WALK1:
+		return "walk1";
+	case ArpNoteMode::WALK2:
+		return "walk2";
+	case ArpNoteMode::WALK3:
+		return "walk3";
+	case ArpNoteMode::PATTERN:
+		return "pattern";
+	default:
+		return "up";
+	}
+}
 
-char const* arpMpeModSourceToString(ArpMpeModSource) { return "off"; }
-ArpMpeModSource stringToArpMpeModSource(char const*) { return ArpMpeModSource::OFF; }
+ArpNoteMode stringToArpNoteMode(char const* string) {
+	if (!strcmp(string, "down")) {
+		return ArpNoteMode::DOWN;
+	}
+	else if (!strcmp(string, "upDown")) {
+		return ArpNoteMode::UP_DOWN;
+	}
+	else if (!strcmp(string, "asPlayed")) {
+		return ArpNoteMode::AS_PLAYED;
+	}
+	else if (!strcmp(string, "walk1")) {
+		return ArpNoteMode::WALK1;
+	}
+	else if (!strcmp(string, "walk2")) {
+		return ArpNoteMode::WALK2;
+	}
+	else if (!strcmp(string, "walk3")) {
+		return ArpNoteMode::WALK3;
+	}
+	else if (!strcmp(string, "pattern")) {
+		return ArpNoteMode::PATTERN;
+	}
+	else if (!strcmp(string, "random")) {
+		return ArpNoteMode::RANDOM;
+	}
+	return ArpNoteMode::UP;
+}
+
+// ── ArpOctaveMode ───────────────────────────────────────────────────────
+char const* arpOctaveModeToString(ArpOctaveMode mode) {
+	switch (mode) {
+	case ArpOctaveMode::DOWN:
+		return "down";
+	case ArpOctaveMode::UP_DOWN:
+		return "upDown";
+	case ArpOctaveMode::ALTERNATE:
+		return "alt";
+	case ArpOctaveMode::RANDOM:
+		return "random";
+	default:
+		return "up";
+	}
+}
+
+ArpOctaveMode stringToArpOctaveMode(char const* string) {
+	if (!strcmp(string, "down")) {
+		return ArpOctaveMode::DOWN;
+	}
+	else if (!strcmp(string, "upDown")) {
+		return ArpOctaveMode::RANDOM;
+	}
+	else if (!strcmp(string, "alt")) {
+		return ArpOctaveMode::ALTERNATE;
+	}
+	else if (!strcmp(string, "random")) {
+		return ArpOctaveMode::RANDOM;
+	}
+	return ArpOctaveMode::UP;
+}
+
+// ── ArpMpeModSource ─────────────────────────────────────────────────────
+char const* arpMpeModSourceToString(ArpMpeModSource modSource) {
+	switch (modSource) {
+	case ArpMpeModSource::MPE_Y:
+		return "y";
+	case ArpMpeModSource::AFTERTOUCH:
+		return "z";
+	default:
+		return "off";
+	}
+}
+
+ArpMpeModSource stringToArpMpeModSource(char const* string) {
+	if (!strcmp(string, "y")) {
+		return ArpMpeModSource::MPE_Y;
+	}
+	else if (!strcmp(string, "z")) {
+		return ArpMpeModSource::AFTERTOUCH;
+	}
+	return ArpMpeModSource::OFF;
+}

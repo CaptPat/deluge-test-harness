@@ -498,6 +498,10 @@ add_executable(HarnessTests
     tests/storage/serializer_format_test.cpp
     # XML round-trip tests (StringSerializer + StringDeserializer)
     tests/storage/xml_roundtrip_test.cpp
+    # LearnedMIDI XML serialization round-trip tests
+    tests/storage/learned_midi_serialization_test.cpp
+    # ArpeggiatorSettings serialization round-trip tests
+    tests/storage/model_serialization_test.cpp
     # DrumName deep coverage: linked lists, NoteRow fields, Voiced interface, search patterns
     tests/model/drum_deep_test.cpp
     # Output deep coverage: type queries, clip instances, linked list, state flags
@@ -510,6 +514,8 @@ add_executable(HarnessTests
     tests/model/scale_chord_deep_test.cpp
     # ModControllableAudio deep coverage: filters, delay, stutter, compressor, modFX, cloneFrom
     tests/model/mod_controllable_deep_test.cpp
+    # PatchCable serialization round-trip tests (source/destination/polarity XML structure)
+    tests/storage/patch_cable_serialization_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
