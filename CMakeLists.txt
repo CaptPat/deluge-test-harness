@@ -430,12 +430,16 @@ add_executable(HarnessTests
     tests/hid/encoder_quadrature_test.cpp
     # Filter blend coverage
     tests/dsp/filter_blend_test.cpp
+    # FilterSet deep integration tests
+    tests/dsp/filter_set_deep_test.cpp
     # Stutterer tests
     tests/model/stutterer_test.cpp
     # Patcher tests
     tests/modulation/patcher_test.cpp
     # Param set tests
     tests/modulation/param_set_test.cpp
+    # Envelope deep coverage
+    tests/modulation/envelope_deep_test.cpp
     # Arpeggiator deep coverage
     tests/modulation/arpeggiator_deep_test.cpp
     # Hash table coverage
@@ -448,6 +452,8 @@ add_executable(HarnessTests
     tests/modulation/param_manager_deep_test.cpp
     # PatchCableSet coverage
     tests/modulation/patch_cable_set_test.cpp
+    # PatchCableSet deep coverage
+    tests/modulation/patch_cable_set_deep_test.cpp
     # Deep coverage: pointer array, linked list, clip instances
     tests/util/resizeable_pointer_array_deep_test.cpp
     tests/util/linked_list_deep_test.cpp
@@ -483,6 +489,10 @@ add_executable(HarnessTests
     tests/playback/metronome_countin_test.cpp
     # LearnedMIDI: construction, matching, MPE zone handling
     tests/io/learned_midi_test.cpp
+    # Serializer formatting layer (XML tag/attribute/indent output)
+    tests/storage/serializer_format_test.cpp
+    # DrumName deep coverage: linked lists, NoteRow fields, Voiced interface, search patterns
+    tests/model/drum_deep_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
