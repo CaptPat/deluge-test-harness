@@ -1213,8 +1213,9 @@ TEST(ArpSerializeRoundTrip, NonAudioUnknownTagsIgnored) {
 
 TEST_GROUP(ArpSerializeFirmwareBugs) {};
 
-TEST(ArpSerializeFirmwareBugs, ReverseProbArrayNameMismatch) {
-	// Write uses "lockedReverseProbArray", read expects "lockeReverseProbArray"
+TEST(ArpSerializeFirmwareBugs, ReverseProbArrayRoundTrips) {
+	// Previously broken: write used "lockedReverseProbArray", read used "lockeReverseProbArray" (typo).
+	// Fixed in PR #99. Verify arrays now survive round-trip.
 	ArpeggiatorSettings original;
 	for (uint32_t i = 0; i < RANDOMIZER_LOCK_MAX_SAVED_VALUES; i++) {
 		original.lockedReverseProbabilityValues[i] = static_cast<int8_t>(i + 50);
@@ -1222,37 +1223,36 @@ TEST(ArpSerializeFirmwareBugs, ReverseProbArrayNameMismatch) {
 
 	std::string xml = writeAndConvertCommonParams(original);
 	CHECK(xml.find("<lockedReverseProbArray>") != std::string::npos);
-	CHECK(xml.find("<lockeReverseProbArray>") == std::string::npos);
 
 	ArpeggiatorSettings restored;
 	readCommonParamsFromXml(restored, xml);
-	CHECK_EQUAL(0, restored.lockedReverseProbabilityValues[0]);
+	CHECK_EQUAL(50, restored.lockedReverseProbabilityValues[0]);
 }
 
-TEST(ArpSerializeFirmwareBugs, ChordProbArrayNameMismatch) {
+TEST(ArpSerializeFirmwareBugs, ChordProbArrayRoundTrips) {
+	// Previously broken: typo "lockeChordProbArray". Fixed in PR #99.
 	ArpeggiatorSettings original;
 	original.lockedChordProbabilityValues[0] = 42;
 
 	std::string xml = writeAndConvertCommonParams(original);
 	CHECK(xml.find("<lockedChordProbArray>") != std::string::npos);
-	CHECK(xml.find("<lockeChordProbArray>") == std::string::npos);
 
 	ArpeggiatorSettings restored;
 	readCommonParamsFromXml(restored, xml);
-	CHECK_EQUAL(0, restored.lockedChordProbabilityValues[0]);
+	CHECK_EQUAL(42, restored.lockedChordProbabilityValues[0]);
 }
 
-TEST(ArpSerializeFirmwareBugs, RatchetProbArrayNameMismatch) {
+TEST(ArpSerializeFirmwareBugs, RatchetProbArrayRoundTrips) {
+	// Previously broken: typo "lockeRatchetProbArray". Fixed in PR #99.
 	ArpeggiatorSettings original;
 	original.lockedRatchetProbabilityValues[0] = 99;
 
 	std::string xml = writeAndConvertCommonParams(original);
 	CHECK(xml.find("<lockedRatchetProbArray>") != std::string::npos);
-	CHECK(xml.find("<lockeRatchetProbArray>") == std::string::npos);
 
 	ArpeggiatorSettings restored;
 	readCommonParamsFromXml(restored, xml);
-	CHECK_EQUAL(0, restored.lockedRatchetProbabilityValues[0]);
+	CHECK_EQUAL(99, restored.lockedRatchetProbabilityValues[0]);
 }
 
 // ── Attribute-to-child-tag converter test ───────────────────────────────

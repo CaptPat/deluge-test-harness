@@ -516,6 +516,15 @@ add_executable(HarnessTests
     tests/model/mod_controllable_deep_test.cpp
     # PatchCable serialization round-trip tests (source/destination/polarity XML structure)
     tests/storage/patch_cable_serialization_test.cpp
+    # GranularProcessor deep coverage: scheduling, buffer wraps, parameter sweeps, feedback
+    tests/dsp/granular_deep_test.cpp
+    # Delay deep coverage: ping-pong, feedback extremes, analog/digital, time changes, HPF
+    tests/dsp/delay_deep_test.cpp
+    # Iterance deep coverage: all divisors, multi-step patterns, wrap-around, preset table, Note integration, fill modes
+    tests/model/iterance_deep_test.cpp
+    # DX7/FM deep coverage: algorithm routing, graduated feedback, pitch envelope edge cases,
+    # velocity sensitivity, multi-voice rendering, operator level scaling, parameter extremes
+    tests/dsp/dx7_deep_test.cpp
 )
 target_link_libraries(HarnessTests PRIVATE deluge_harness)
 target_include_directories(HarnessTests PRIVATE
