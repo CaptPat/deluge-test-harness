@@ -463,6 +463,8 @@ add_executable(HarnessTests
     tests/meta/upstream_overlap_test.cpp
     # Meta: source contract — race condition guards (upstream #3898)
     tests/meta/sd_race_guard_test.cpp
+    # Meta: upstream bug reproductions (#4284 chord melodic minor crash, #4372 string missing return)
+    tests/meta/upstream_bug_repro_test.cpp
     # Phase S: Sound/Voice/SoundInstrument smoke tests
     tests/processing/sound_voice_smoke_test.cpp
     # Phase S2: setSynthMode regression test (#4232 patch cables after FM switch)
@@ -516,6 +518,8 @@ add_executable(HarnessTests
     tests/model/mod_controllable_deep_test.cpp
     # PatchCable serialization round-trip tests (source/destination/polarity XML structure)
     tests/storage/patch_cable_serialization_test.cpp
+    # Delay, Sidechain, AudioCompressor, Stutter, FilterConfig serialization round-trip tests
+    tests/storage/model_serialization_deep_test.cpp
     # GranularProcessor deep coverage: scheduling, buffer wraps, parameter sweeps, feedback
     tests/dsp/granular_deep_test.cpp
     # Delay deep coverage: ping-pong, feedback extremes, analog/digital, time changes, HPF
