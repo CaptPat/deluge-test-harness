@@ -12,8 +12,17 @@ TEST(GranularProcessorTest, defaultConstruction) {
 	CHECK_EQUAL(0, proc.getSamplesToShutdown());
 }
 
-// Copy constructor test skipped — copies raw grainBuffer pointer,
-// causing double-free on destruction in test context.
+TEST(GranularProcessorTest, copyConstructorAllocatesOwnBuffer) {
+	// Regression: upstream #4356 — copy constructor must allocate its own
+	// grainBuffer via getBuffer(), not share the original's pointer.
+	// Both original and copy must be safely destructible.
+	{
+		GranularProcessor original;
+		GranularProcessor copy(original);
+		// Both go out of scope — no double-free
+	}
+	CHECK(true); // reached here without crashing
+}
 
 TEST(GranularProcessorTest, clearGrainFXBuffer) {
 	// Clearing the buffer on a fresh processor should not crash
