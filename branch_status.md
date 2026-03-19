@@ -36,27 +36,36 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (19)
+## Bugfix branches (28)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+| `bugfix/arp-locked-prob-typo`                   | active     | has-test    | Three tag names missing 'd' in "locked" — locked reverse/chord/ratchet prob arrays silently lost on save/load          | `tests/storage/model_serialization_test.cpp` (arp tag round-trip)                           | --             |
+| `bugfix/arp-ratchet-probability-cache`          | active     | has-test    | Ratchet probability not cached like other prob types — causes inconsistent arp ratcheting and stuck locked randomizer  | `tests/storage/model_serialization_test.cpp` (ratchet prob serialization)                   | #4298 (open)   |
 | `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | --             |
-| `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | --             |
+| `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | #4105 (open)   |
 | `bugfix/browser-text-search-last-item`         | active     | has-test    | Last item unfindable in browser text search; same off-by-one + `notFound` label placement                              | `tests/util/browser_search_test.cpp`                                                        | --             |
+| `bugfix/chord-keyboard-melodic-minor-crash`     | active     | has-test    | Uninitialized `qualities[]` in `KeyboardLayoutChord` causes OOB access with melodic/harmonic/hungarian minor scales    | `tests/meta/upstream_bug_repro_test.cpp`, `tests/gui/chord_keyboard_test.cpp`               | #4284 (open)   |
 | `bugfix/envelope-sustain-zero-stuck`            | active     | has-test    | `smoothedSustain` goes negative when sustain=0, causing stuck notes                                                    | `tests/modulation/envelope_test.cpp` (real `Envelope::render()` with alignment-break trick) | --             |
 | `bugfix/grid-dim-pads-after-new-clip`           | active     | gui-only    | Missing `skipGreyoutFade()` before explode animation                                                                   | none                                                                                        | --             |
+| `bugfix/kit-midi-learn-master-level`            | active     | testable    | `setupKitGlobalFXMenu` not set when entering SoundEditor via shortcut pad — null `ModControllable` crash on MIDI learn | none                                                                                        | #3640 (open)   |
 | `bugfix/lpf-drive-label-display`                | active     | has-test    | Filter morph labels show "morph" when should show "drive"/"FM" for ladder filters                                      | `tests/modulation/filter_morph_label_test.cpp` (family classification + label logic)        | --             |
 | `bugfix/macro-keyboard-visual-feedback`         | active     | gui-only    | Non-active macro pads not dimmed in keyboard session column                                                             | none                                                                                        | --             |
 | `bugfix/metronome-countin-toggle`               | active     | has-test    | Count-in plays metronome clicks even when metronome is off; session sync/tempoless record use wrong comparisons        | `tests/playback/metronome_countin_test.cpp` (extracted session + playback logic)             | --             |
+| `bugfix/midi-follow-double-note`                | active     | has-test    | MIDI Follow handles note then general loop visits same instrument — double `recordNoteOn()` and audible note clusters  | `tests/playback/midi_follow_dedup_test.cpp` (dedup logic)                                   | --             |
+| `bugfix/midi-to-synth-crash-on-save`            | active     | testable    | Stale `midiBank/midiSub/midiPGM` after `changeOutputType()` from MIDI_OUT causes crash during save serialization      | none                                                                                        | #4014 (open)   |
 | `bugfix/mod-matrix-fast-scroll`                 | active     | gui-only    | OLED menu scroll jumps (wrong scroll position calc)                                                                    | none                                                                                        | --             |
-| `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | --             |
+| `bugfix/multisample-octave-zero`                | active     | testable    | `getComparativeNoteNumberFromChars()` rejects '0' as octave digit — filenames like "C0.wav" sort incorrectly           | none                                                                                        | #3784 (open)   |
+| `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | #4284 (open)   |
 | `bugfix/patch-cables-fm-subtractive-switch`     | active     | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 (open)   |
 | `bugfix/reverb-filter-encoder-jumps`            | active     | has-test    | Float truncation drift in reverb HPF/LPF `readCurrentValue()` (missing `std::round()`)                                | `tests/dsp/reverb_filter_roundtrip_test.cpp` (round-trip math with real `Base` subclass)    | --             |
 | `bugfix/settings-exit-sd-race-v3`               | active     | has-test    | Re-entrant FatFS crash: defers settings writes via `addOnceTask(RESOURCE_SD)`                                          | `tests/meta/sd_race_guard_test.cpp` (source contract: `addOnceTask` in exitCompletely)      | #3898, #2759   |
 | `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
-| `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | --             |
-| `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | --             |
-| `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                               | none                                                                                        | --             |
+| `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | #4125 (open)   |
+| `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | #4049 (open)   |
+| `bugfix/string-missing-return`                  | active     | has-test    | Missing `return` for `std::unexpected` in string.cpp — snprintf overflow silently returns bogus pointer                 | `tests/meta/upstream_bug_repro_test.cpp` (to_chars overflow regression)                     | #4372 (open)   |
+| `bugfix/unsaved-synth-to-kit-row`               | active     | testable    | Missing `existsOnCard` check before destructive drum removal — unsaved presets cause FILE_NOT_FOUND after drum deleted | none                                                                                        | --             |
+| `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                               | none                                                                                        | #3985 (open)   |
 | `bugfix/wavetable-mod-knob-overwrite`           | active     | has-test    | Default mod knob mappings set on every sample swap, not just wavetable transition                                      | `tests/processing/wavetable_mod_knob_test.cpp` (real `applyWavetableModKnobDefaults()`)     | --             |
 | `fix/velocity-view-quantize-freeze`             | active     | has-test    | Missing `UI_MODE_QUANTIZE` handler in AutomationView causes partial freeze when quantizing in Velocity View            | `tests/meta/quantize_freeze_guard_test.cpp` (source contract: quantize handler + public visibility) | #3718 (open) |
 
@@ -91,7 +100,7 @@ To verify a bugfix branch is still needed, either:
 
 ## Regression test analysis
 
-**Current state:** 2003 tests, all passing. Coverage summary below.
+**Current state:** 3701 tests, all passing (except 2 pre-existing SDRaceGuard failures from deferred SD ops revert). Coverage summary below.
 
 ### Test quality by branch
 
@@ -111,8 +120,16 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
 | `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
-| `fix/velocity-view-quantize-freeze`      | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
+| `bugfix/arp-locked-prob-typo`             | **Good** -- serialization round-trip test verifies corrected tag names                                                |
+| `bugfix/arp-ratchet-probability-cache`    | **Good** -- serialization test verifies ratchet probability field persistence                                         |
+| `bugfix/chord-keyboard-melodic-minor-crash` | **Strong** -- real `getChordQuality()` for all preset scales + dedicated chord keyboard test                        |
+| `bugfix/midi-follow-double-note`          | **Good** -- dedup logic test verifies handled output is skipped in general loop                                       |
+| `bugfix/string-missing-return`            | **Good** -- to_chars overflow regression tests in upstream_bug_repro_test.cpp                                         |
+| `fix/velocity-view-quantize-freeze`       | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
 
 ### Remaining untested testable branches
 
-None — all testable branches now have tests.
+- `bugfix/kit-midi-learn-master-level` — source contract test needed (verify `affectEntire` check in `potentialShortcutPadAction` and `setup()`)
+- `bugfix/midi-to-synth-crash-on-save` — source contract test needed (verify stale MIDI metadata cleared in `changeOutputType`)
+- `bugfix/multisample-octave-zero` — unit test needed (real `getComparativeNoteNumberFromChars()` with '0' octave)
+- `bugfix/unsaved-synth-to-kit-row` — source contract test needed (verify `existsOnCard` check before drum removal)
