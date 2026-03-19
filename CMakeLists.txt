@@ -469,6 +469,8 @@ add_executable(HarnessTests
     tests/meta/sd_race_guard_test.cpp
     # Meta: source contract — quantize freeze guard (upstream #3718)
     tests/meta/quantize_freeze_guard_test.cpp
+    # Meta: source contract — missing branch guards (#3784, #3640, #4014, unsaved-synth)
+    tests/meta/missing_branch_guard_test.cpp
     # Meta: upstream bug reproductions (#4284 chord melodic minor crash, #4372 string missing return)
     tests/meta/upstream_bug_repro_test.cpp
     # Phase S: Sound/Voice/SoundInstrument smoke tests
