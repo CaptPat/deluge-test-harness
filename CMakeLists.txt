@@ -313,6 +313,7 @@ add_executable(HarnessTests
     tests/model/scale_test.cpp
     tests/model/sync_test.cpp
     tests/model/chord_test.cpp
+    tests/gui/chord_keyboard_test.cpp
     tests/model/clip_iterators_test.cpp
     tests/modulation/lfo_test.cpp
     tests/model/resizeable_array_test.cpp
@@ -348,6 +349,7 @@ add_executable(HarnessTests
     tests/model/filter_config_test.cpp
     tests/dsp/filter_set_test.cpp
     tests/util/string_test.cpp
+    tests/util/to_chars_test.cpp
     tests/dsp/dx7_env_test.cpp
     tests/dsp/dx7_pitchenv_test.cpp
     tests/dsp/rms_feedback_test.cpp
