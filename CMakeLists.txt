@@ -439,6 +439,8 @@ add_executable(HarnessTests
     tests/modulation/patcher_test.cpp
     # Param set tests
     tests/modulation/param_set_test.cpp
+    # Param set deep coverage (targeting uncovered lines in param_set.cpp)
+    tests/modulation/param_set_coverage_test.cpp
     # Envelope deep coverage
     tests/modulation/envelope_deep_test.cpp
     # Arpeggiator deep coverage
@@ -484,6 +486,8 @@ add_executable(HarnessTests
     tests/processing/sound_deep_test.cpp
     # Arpeggiator edge cases: rapid cycling, gate boundaries, octave ranges
     tests/modulation/arpeggiator_edge_test.cpp
+    # Arpeggiator coverage: doTickForward, spread, ratchet, walk, glide, presets, randomizer
+    tests/modulation/arpeggiator_coverage_test.cpp
     # Multisample transpose retrigger regression test
     tests/processing/multisample_transpose_test.cpp
     # Source packed filenames + dirPath integration tests
