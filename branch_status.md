@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (28)
+## Bugfix branches (29)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -62,6 +62,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/settings-exit-sd-race-v3`               | active     | has-test    | Re-entrant FatFS crash: defers settings writes via `addOnceTask(RESOURCE_SD)`                                          | `tests/meta/sd_race_guard_test.cpp` (source contract: `addOnceTask` in exitCompletely)      | #3898, #2759   |
 | `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | #4125 (open)   |
+| `bugfix/stereo-spread-osc-sync`                 | active     | has-test    | Stereo rendering path passes `doOscSync=false` and nullptr for sync arrays, disabling osc sync with stereo spread      | `tests/meta/missing_branch_guard_test.cpp` (source contract: sync params in stereo loop)    | #3373 (open)   |
 | `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | #4049 (open)   |
 | `bugfix/string-missing-return`                  | active     | has-test    | Missing `return` for `std::unexpected` in string.cpp — snprintf overflow silently returns bogus pointer                 | `tests/meta/upstream_bug_repro_test.cpp` (to_chars overflow regression)                     | #4372 (open)   |
 | `bugfix/unsaved-synth-to-kit-row`               | active     | has-test    | Missing `existsOnCard` check before destructive drum removal — unsaved presets cause FILE_NOT_FOUND after drum deleted | `tests/meta/missing_branch_guard_test.cpp` (source contract: existsOnCard before load)      | --             |
@@ -129,6 +130,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/midi-to-synth-crash-on-save`      | **Good** -- source contract test verifies stale MIDI metadata cleared in `changeOutputType` for MIDI_OUT |
 | `bugfix/multisample-octave-zero`           | **Good** -- source contract test verifies octave '0' accepted in `getComparativeNoteNumberFromChars` range check |
 | `bugfix/unsaved-synth-to-kit-row`          | **Good** -- source contract test verifies `existsOnCard` checked before destructive drum removal |
+| `bugfix/stereo-spread-osc-sync`            | **Good** -- source contract test verifies sync params (`doingOscSync`, `oscSyncPos`) in stereo rendering loop |
 | `fix/velocity-view-quantize-freeze`       | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
 
 ### Remaining untested testable branches

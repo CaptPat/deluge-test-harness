@@ -211,4 +211,43 @@ TEST(UnsavedSynthToKitRowGuard, checksExistsOnCardBeforeLoad) {
 	           "to prevent destructive drum removal when file doesn't exist");
 }
 
+// ============================================================================
+// bugfix/stereo-spread-osc-sync (upstream #3373)
+//
+// When unison stereo spread was nonzero, the subtractive synth stereo
+// rendering path in Voice::render() passed doOscSync=false and nullptr
+// for sync arrays to renderBasicSource(), completely disabling osc sync.
+// Fix: pass sync parameters to the stereo path just like the mono path.
+// ============================================================================
+
+TEST_GROUP(StereoSpreadOscSyncGuard){};
+
+TEST(StereoSpreadOscSyncGuard, stereoRenderingPathPassesSyncParams) {
+	fs::path cppPath = firmwareRoot() / "src" / "deluge" / "model" / "voice" / "voice.cpp";
+	CHECK_TEXT(fs::exists(cppPath), "voice.cpp not found — is firmware submodule checked out?");
+
+	std::string src = readFile(cppPath);
+	CHECK_TEXT(!src.empty(), "Failed to read voice.cpp");
+
+	// Find the stereo source rendering loop in the subtractive synth path.
+	// It's the loop that iterates sourcesToRenderInStereo after the mono rendering.
+	auto stereoLoopPos = src.find("sourcesToRenderInStereo & (1 << s)");
+	CHECK_TEXT(stereoLoopPos != std::string::npos,
+	           "Stereo source rendering loop not found in voice.cpp");
+
+	// The renderBasicSource call within this loop must pass osc sync parameters,
+	// not hardcoded false/nullptr. Look for the sync variable names that prove
+	// the fix is present.
+	auto nextFunc = src.find("\nvoid ", stereoLoopPos);
+	auto region = src.substr(stereoLoopPos, (nextFunc != std::string::npos) ? nextFunc - stereoLoopPos : 500);
+
+	CHECK_TEXT(region.find("doingOscSync") != std::string::npos,
+	           "Stereo rendering loop must reference doingOscSync to pass sync "
+	           "parameters to renderBasicSource (bugfix/stereo-spread-osc-sync, upstream #3373)");
+
+	CHECK_TEXT(region.find("oscSyncPos") != std::string::npos,
+	           "Stereo rendering loop must pass oscSyncPos to renderBasicSource "
+	           "for oscillator sync to work with stereo spread");
+}
+
 } // namespace
