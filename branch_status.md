@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (18)
+## Bugfix branches (19)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -58,6 +58,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                       | none                                                                                        | --             |
 | `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                               | none                                                                                        | --             |
 | `bugfix/wavetable-mod-knob-overwrite`           | active     | has-test    | Default mod knob mappings set on every sample swap, not just wavetable transition                                      | `tests/processing/wavetable_mod_knob_test.cpp` (real `applyWavetableModKnobDefaults()`)     | --             |
+| `fix/velocity-view-quantize-freeze`             | active     | has-test    | Missing `UI_MODE_QUANTIZE` handler in AutomationView causes partial freeze when quantizing in Velocity View            | `tests/meta/quantize_freeze_guard_test.cpp` (source contract: quantize handler + public visibility) | #3718 (open) |
 
 ## Feature branches (8)
 
@@ -110,6 +111,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
 | `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
+| `fix/velocity-view-quantize-freeze`      | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
 
 ### Remaining untested testable branches
 
