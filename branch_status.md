@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (29)
+## Bugfix branches (30)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -49,6 +49,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/envelope-sustain-zero-stuck`            | active     | has-test    | `smoothedSustain` goes negative when sustain=0, causing stuck notes                                                    | `tests/modulation/envelope_test.cpp` (real `Envelope::render()` with alignment-break trick) | --             |
 | `bugfix/grid-dim-pads-after-new-clip`           | active     | gui-only    | Missing `skipGreyoutFade()` before explode animation                                                                   | none                                                                                        | --             |
 | `bugfix/kit-midi-learn-master-level`            | active     | has-test    | `setupKitGlobalFXMenu` not set when entering SoundEditor via shortcut pad — null `ModControllable` crash on MIDI learn | `tests/meta/missing_branch_guard_test.cpp` (source contract: affectEntire checks)           | #3640 (open)   |
+| `bugfix/loop-undo-pending-overdub-crash`        | active     | has-test    | Use-after-free in `revertAction()`: `deletePendingOverdubs()` frees clips still referenced by action's consequences   | `tests/unit/action_references_clip_tests.cpp`, `tests/unit/loop_undo_guard_tests.cpp`       | #3746 (open)   |
 | `bugfix/lpf-drive-label-display`                | active     | has-test    | Filter morph labels show "morph" when should show "drive"/"FM" for ladder filters                                      | `tests/modulation/filter_morph_label_test.cpp` (family classification + label logic)        | --             |
 | `bugfix/macro-keyboard-visual-feedback`         | active     | gui-only    | Non-active macro pads not dimmed in keyboard session column                                                             | none                                                                                        | --             |
 | `bugfix/metronome-countin-toggle`               | active     | has-test    | Count-in plays metronome clicks even when metronome is off; session sync/tempoless record use wrong comparisons        | `tests/playback/metronome_countin_test.cpp` (extracted session + playback logic)             | --             |
@@ -116,6 +117,7 @@ To verify a bugfix branch is still needed, either:
 | `feature/multisample-dirpath-dedup`       | **Strong** -- real splitPath/dirMatches + Source dirPath reconstruction across packed/unpacked/revert paths           |
 | `bugfix/reverb-filter-encoder-jumps`      | **Good** -- tests float round-trip math via `Base` subclass, covers the essential truncation vs rounding bug          |
 | `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
+| `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
 | `feature/midi-cc66-sostenuto-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
