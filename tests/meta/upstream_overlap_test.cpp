@@ -35,6 +35,8 @@ const std::map<std::string, std::vector<std::string>> knownOverlap = {
 const std::map<std::string, std::string> upstreamOnly = {
     {"scheduler_tests.cpp", "needs timer mocks + resource_checker + MockSupport"},
     {"RunAllTests.cpp", "CppUTest entry point, not a test"},
+    {"action_references_clip_tests.cpp", "upstream action/clip reference tests"},
+    {"loop_undo_guard_tests.cpp", "upstream loop undo guard tests"},
 };
 
 fs::path repoRoot() {

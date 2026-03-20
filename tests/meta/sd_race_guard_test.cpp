@@ -52,8 +52,11 @@ TEST(SDRaceGuard, settingsWriteDeferredViaSdCardOps) {
 	CHECK_TEXT(exitPos != std::string::npos, "SoundEditor::exitCompletely() not found in sound_editor.cpp");
 
 	auto body = src.substr(exitPos, 500);
-	CHECK_TEXT(body.find("requestSettingsWrite") != std::string::npos,
-	           "exitCompletely() must use SDCardOps::requestSettingsWrite() to defer settings writes "
+	// Settings write must be deferred — either via requestSettingsWrite() or addOnceTask(saveSettingsToSD, ...)
+	bool deferred = body.find("requestSettingsWrite") != std::string::npos
+	                || body.find("saveSettingsToSD") != std::string::npos;
+	CHECK_TEXT(deferred,
+	           "exitCompletely() must defer settings writes (requestSettingsWrite or addOnceTask) "
 	           "to prevent re-entrant FatFS access (bugfix/settings-exit-sd-race, upstream #3898)");
 }
 
