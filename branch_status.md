@@ -75,7 +75,7 @@ To verify a bugfix branch is still needed, either:
 
 | Branch                                    | Status | Testability | What it adds                                                              | Harness test                                                                      | Upstream issue |
 | ----------------------------------------- | ------ | ----------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------- |
-| `feature/midi-cc66-sostenuto-pedal`       | active | has-test    | CC64 sustain + CC66 sostenuto + CC67 soft pedal with `PedalState` bitfield | `tests/model/pedal_state_test.cpp`, `tests/processing/sustain_pedal_test.cpp`    | --             |
+| `feature/midi-cc64-66-67-pedal`       | active | has-test    | CC64 sustain + CC66 sostenuto + CC67 soft pedal with `PedalState` bitfield | `tests/model/pedal_state_test.cpp`, `tests/processing/sustain_pedal_test.cpp`    | --             |
 | `feature/midi-separate-clock-transport`   | active | has-test    | Separate MIDI clock output from transport messages                        | `tests/playback/midi_transport_toggle_test.cpp`                                   | --             |
 | `feature/multisample-dirpath-dedup`       | active | has-test    | Shared dirPath on Source; splitPath/dirMatches utilities                   | `tests/storage/source_packed_filenames_test.cpp` (Source integration + PathUtils) | --             |
 | `feature/packed-filenames`                | active | has-test    | Single-alloc PackedFilenames buffer for multisample name storage          | `tests/storage/source_packed_filenames_test.cpp` (Source integration + 88-key)    | --             |
@@ -93,9 +93,9 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/granular-copy-ctor-uninit-buffer` | Fixed upstream via PR #4371                                |
 | `bugfix/granular-destructor-dealloc`      | Reported as #4358                                          |
 | `bugfix/granular-stolen-stale-state`      | Revert was correct (PR #4370)                              |
-| `feature/midi-cc64-sustain-pedal`         | Superseded by `feature/midi-cc66-sostenuto-pedal`          |
-| `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc66-sostenuto-pedal`          |
-| `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc66-sostenuto-pedal`          |
+| `feature/midi-cc64-sustain-pedal`         | Superseded by `feature/midi-cc64-66-67-pedal`          |
+| `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
+| `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `bugfix/midi-learned-param-display`       | Obsolete                                                   |
 | `bugfix/settings-exit-sd-race`            | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
 | `kastenbalg/deferred-sd-operations`       | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
@@ -119,7 +119,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
 | `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
-| `feature/midi-cc66-sostenuto-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
+| `feature/midi-cc64-66-67-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
 | `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
