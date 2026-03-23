@@ -93,7 +93,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/audio-source-track-mute-cleanup`  | Already in upstream (no PR needed)                         |
 | `bugfix/granular-copy-ctor-uninit-buffer` | Fixed upstream via PR #4371                                |
 | `bugfix/granular-destructor-dealloc`      | Reported as #4358                                          |
-| `bugfix/granular-stolen-stale-state`      | Revert was correct (PR #4370)                              |
+| `bugfix/granular-stolen-stale-state`      | Merged upstream (#4361), reverted (#4370). Matt's header init (#4371) + getBuffer path covers most cases, but stolen→processGrainFX window remains. Defense-in-depth argument still valid — see memory. |
 | `feature/midi-cc64-sustain-pedal`         | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
