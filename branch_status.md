@@ -7,7 +7,7 @@
 | -------------------- | ------------------------------------------------------------------------------ |
 | **upstream**         | `SynthstromAudible/DelugeFirmware:main` -- the canonical firmware              |
 | **branch**           | Individual fix/feature branch on `CaptPat/DelugeFirmware`, rebased on upstream |
-| **baseline**         | `CaptPat/DelugeFirmware:harness/baseline` -- upstream + all active branches    |
+| **baseline**         | `CaptPat/DelugeFirmware:personal/nightly` -- local nightly integration branch   |
 | **regression delta** | Tests that FAIL on upstream but PASS on baseline (proves fix still needed)     |
 
 ## Status legend
