@@ -36,10 +36,11 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (30)
+## Bugfix branches (31)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+| `bugfix/arrangement-record-song-cast-crash`     | active     | testable    | `ModelStack` methods cast `Song*` as `Clip*` when recording song-level params in arrangement mode — crash on deref     | none (needs source contract test)                                                           | --             |
 | `bugfix/arp-locked-prob-typo`                   | active     | has-test    | Three tag names missing 'd' in "locked" — locked reverse/chord/ratchet prob arrays silently lost on save/load          | `tests/storage/model_serialization_test.cpp` (arp tag round-trip)                           | --             |
 | `bugfix/arp-ratchet-probability-cache`          | active     | has-test    | Ratchet probability not cached like other prob types — causes inconsistent arp ratcheting and stuck locked randomizer  | `tests/storage/model_serialization_test.cpp` (ratchet prob serialization)                   | #4298 (open)   |
 | `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | #4038 (open)   |
