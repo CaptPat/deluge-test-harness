@@ -36,13 +36,14 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (31)
+## Bugfix branches (32)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
 | `bugfix/arrangement-record-song-cast-crash`     | active     | testable    | `ModelStack` methods cast `Song*` as `Clip*` when recording song-level params in arrangement mode — crash on deref     | none (needs source contract test)                                                           | --             |
 | `bugfix/arp-locked-prob-typo`                   | active     | has-test    | Three tag names missing 'd' in "locked" — locked reverse/chord/ratchet prob arrays silently lost on save/load          | `tests/storage/model_serialization_test.cpp` (arp tag round-trip)                           | --             |
 | `bugfix/arp-ratchet-probability-cache`          | active     | has-test    | Ratchet probability not cached like other prob types — causes inconsistent arp ratcheting and stuck locked randomizer  | `tests/storage/model_serialization_test.cpp` (ratchet prob serialization)                   | #4298 (open)   |
+| `bugfix/browser-filepointer-cache`              | active     | has-test    | O(N^2) SD reads in `addInstrumentsToFileItems` — caches FAT FilePointer on Instrument to avoid repeated `f_open()`    | `tests/unit/browser_filepointer_cache_tests.cpp` (source contract: 6 pattern checks)        | #4199 (open)   |
 | `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | #4038 (open)   |
 | `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | #4105 (open)   |
 | `bugfix/browser-text-search-last-item`         | active     | has-test    | Last item unfindable in browser text search; same off-by-one + `notFound` label placement                              | `tests/util/browser_search_test.cpp`                                                        | #4039 (open)   |
@@ -117,6 +118,7 @@ To verify a bugfix branch is still needed, either:
 | `feature/packed-filenames`                | **Strong** -- real Source integration: getFullPath, unpackFilenames, revertToFullPaths with 88-key piano scenario     |
 | `feature/multisample-dirpath-dedup`       | **Strong** -- real splitPath/dirMatches + Source dirPath reconstruction across packed/unpacked/revert paths           |
 | `bugfix/reverb-filter-encoder-jumps`      | **Good** -- tests float round-trip math via `Base` subclass, covers the essential truncation vs rounding bug          |
+| `bugfix/browser-filepointer-cache`        | **Good** -- source contract tests verify cache field, population, usage, invalidation, and dedup copy patterns        |
 | `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
 | `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
