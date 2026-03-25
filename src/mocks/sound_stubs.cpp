@@ -377,76 +377,9 @@ void Sound::setupAsBlankSynth(ParamManager*, bool) {}
 void Sound::setupAsDefaultSynth(ParamManager*) {}
 void Sound::setupAsSample(ParamManagerForTimeline*) {}
 void Sound::recalculateAllVoicePhaseIncrements(ModelStackWithSoundFlags*) {}
-// Real implementation — regression test for fix/multisample-transpose-retrigger
-void Sound::retriggerVoicesForTransposeChange(ModelStackWithSoundFlags* modelStack) {
-	if (voices_.empty() || modelStack == nullptr) {
-		return;
-	}
-
-	// Check if any source uses multisamples (multiple zones)
-	bool hasMultisamples = false;
-	for (int32_t s = 0; s < kNumSources; s++) {
-		if (synthMode != SynthMode::FM && sources[s].oscType == OscType::SAMPLE
-		    && sources[s].ranges.getNumElements() > 1) {
-			hasMultisamples = true;
-			break;
-		}
-	}
-
-	// No multisamples — existing behavior is correct
-	if (!hasMultisamples) {
-		recalculateAllVoicePhaseIncrements(modelStack);
-		return;
-	}
-
-	// For each voice, check if the multisample zone changed and re-trigger if so
-	for (auto it = voices_.begin(); it != voices_.end();) {
-		const ActiveVoice& voice = *it;
-
-		bool rangeChanged = false;
-		for (int32_t s = 0; s < kNumSources; s++) {
-			if (synthMode != SynthMode::FM && sources[s].oscType == OscType::SAMPLE
-			    && sources[s].ranges.getNumElements() > 1) {
-				MultiRange* newRange = sources[s].getRange(voice->noteCodeAfterArpeggiation + transpose);
-				if (newRange && newRange->getAudioFileHolder() != voice->guides[s].audioFileHolder) {
-					rangeChanged = true;
-					break;
-				}
-			}
-		}
-
-		if (!rangeChanged) {
-			voice->calculatePhaseIncrements(modelStack);
-			++it;
-			continue;
-		}
-
-		// Zone changed — re-trigger the voice with recovered parameters
-		int32_t notePreArp = voice->inputCharacteristics[util::to_underlying(MIDICharacteristic::NOTE)];
-		int32_t notePostArp = voice->noteCodeAfterArpeggiation;
-		int32_t midiChannel = voice->inputCharacteristics[util::to_underlying(MIDICharacteristic::CHANNEL)];
-
-		int32_t velSrc = voice->sourceValues[util::to_underlying(PatchSource::VELOCITY)];
-		int32_t velRecovered = std::clamp((velSrc / 33554432) + 64, (int32_t)0, (int32_t)127);
-		uint8_t velocity = (velSrc >= 2147483647) ? 128 : static_cast<uint8_t>(velRecovered);
-
-		int16_t mpeValues[kNumExpressionDimensions];
-		for (int32_t m = 0; m < kNumExpressionDimensions; m++) {
-			mpeValues[m] = static_cast<int16_t>(voice->localExpressionSourceValuesBeforeSmoothing[m] >> 16);
-		}
-
-		uint32_t syncLength = voice->guides[0].sequenceSyncLengthTicks;
-
-		bool success = voice->noteOn(modelStack, notePreArp, notePostArp, velocity, syncLength, 0, 0, true, midiChannel,
-		                             mpeValues);
-		if (!success) {
-			freeActiveVoice(voice, modelStack, false);
-			it = voices_.erase(it);
-			continue;
-		}
-		++it;
-	}
-}
+// Removed: retriggerVoicesForTransposeChange stub — method only exists when
+// fix/multisample-transpose-retrigger is merged into nightly. Re-add when
+// nightly is rebuilt with that branch. Test: multisample_transpose_test.cpp.
 Error Sound::loadAllAudioFiles(bool) { return Error::NONE; }
 void Sound::modButtonAction(uint8_t, bool, ParamManagerForTimeline*) {}
 bool Sound::modEncoderButtonAction(uint8_t, bool, ModelStackWithThreeMainThings*) { return false; }
