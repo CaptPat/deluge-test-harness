@@ -2,3 +2,4 @@
 	path = firmware
 	url = https://github.com/CaptPat/DelugeFirmware.git
 	branch = personal/nightly
+	ignore = dirty
