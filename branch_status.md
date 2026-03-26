@@ -36,14 +36,12 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (32)
+## Bugfix branches (29)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
 | `bugfix/arrangement-record-song-cast-crash`     | active     | testable    | `ModelStack` methods cast `Song*` as `Clip*` when recording song-level params in arrangement mode — crash on deref     | none (needs source contract test)                                                           | --             |
-| `bugfix/arp-locked-prob-typo`                   | active     | has-test    | Three tag names missing 'd' in "locked" — locked reverse/chord/ratchet prob arrays silently lost on save/load          | `tests/storage/model_serialization_test.cpp` (arp tag round-trip)                           | --             |
 | `bugfix/arp-ratchet-probability-cache`          | active     | has-test    | Ratchet probability not cached like other prob types — causes inconsistent arp ratcheting and stuck locked randomizer  | `tests/storage/model_serialization_test.cpp` (ratchet prob serialization)                   | #4298 (open)   |
-| `bugfix/browser-filepointer-cache`              | active     | has-test    | O(N^2) SD reads in `addInstrumentsToFileItems` — caches FAT FilePointer on Instrument to avoid repeated `f_open()`    | `tests/unit/browser_filepointer_cache_tests.cpp` (source contract: 6 pattern checks)        | #4199 (open)   |
 | `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | #4038 (open)   |
 | `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | #4105 (open)   |
 | `bugfix/browser-text-search-last-item`         | active     | has-test    | Last item unfindable in browser text search; same off-by-one + `notFound` label placement                              | `tests/util/browser_search_test.cpp`                                                        | #4039 (open)   |
@@ -67,7 +65,6 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | #4125 (open)   |
 | `bugfix/stereo-spread-osc-sync`                 | active     | has-test    | Stereo rendering path passes `doOscSync=false` and nullptr for sync arrays, disabling osc sync with stereo spread      | `tests/meta/missing_branch_guard_test.cpp` (source contract: sync params in stereo loop)    | #3373 (open)   |
 | `bugfix/song-mode-clip-stuck-after-launch`      | active     | gui-only    | `UI_MODE_CLIP_PRESSED_IN_SONG_VIEW` conflated with `UI_MODE_HOLDING_STATUS_PAD`                                        | none                                                                                        | #4049 (open)   |
-| `bugfix/string-missing-return`                  | active     | has-test    | Missing `return` for `std::unexpected` in string.cpp — snprintf overflow silently returns bogus pointer                 | `tests/meta/upstream_bug_repro_test.cpp` (to_chars overflow regression)                     | #4372 (open)   |
 | `bugfix/unsaved-synth-to-kit-row`               | active     | has-test    | Missing `existsOnCard` check before destructive drum removal — unsaved presets cause FILE_NOT_FOUND after drum deleted | `tests/meta/missing_branch_guard_test.cpp` (source contract: existsOnCard before load)      | --             |
 | `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                                | none                                                                                        | #3985 (open)   |
 | `bugfix/wavetable-mod-knob-overwrite`           | active     | has-test    | Default mod knob mappings set on every sample swap, not just wavetable transition                                      | `tests/processing/wavetable_mod_knob_test.cpp` (real `applyWavetableModKnobDefaults()`)     | --             |
@@ -99,7 +96,10 @@ To verify a bugfix branch is still needed, either:
 | `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `bugfix/midi-learned-param-display`       | Obsolete                                                   |
+| `bugfix/arp-locked-prob-typo`             | Upstream merged our PR #4398 — fix now in baseline                                              |
+| `bugfix/browser-filepointer-cache`        | Upstream #4393 merged (different approach) — our cache approach superseded                       |
 | `bugfix/song-swap-cancel-back`            | No-op after rebase — upstream #4391 landed the exitUI refactor, song swap fix was fully reverted |
+| `bugfix/string-missing-return`            | Upstream merged our PR #4396 — fix now in baseline                                              |
 | `bugfix/settings-exit-sd-race`            | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
 | `feature/per-clip-tempo-ratio`            | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
 | `feature/per-clip-time-signature`         | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
@@ -122,7 +122,6 @@ To verify a bugfix branch is still needed, either:
 | `feature/packed-filenames`                | **Strong** -- real Source integration: getFullPath, unpackFilenames, revertToFullPaths with 88-key piano scenario     |
 | `feature/multisample-dirpath-dedup`       | **Strong** -- real splitPath/dirMatches + Source dirPath reconstruction across packed/unpacked/revert paths           |
 | `bugfix/reverb-filter-encoder-jumps`      | **Good** -- tests float round-trip math via `Base` subclass, covers the essential truncation vs rounding bug          |
-| `bugfix/browser-filepointer-cache`        | **Good** -- source contract tests verify cache field, population, usage, invalidation, and dedup copy patterns        |
 | `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
 | `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
@@ -130,11 +129,9 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
 | `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
-| `bugfix/arp-locked-prob-typo`             | **Good** -- serialization round-trip test verifies corrected tag names                                                |
 | `bugfix/arp-ratchet-probability-cache`    | **Good** -- serialization test verifies ratchet probability field persistence                                         |
 | `bugfix/chord-keyboard-melodic-minor-crash` | **Strong** -- real `getChordQuality()` for all preset scales + dedicated chord keyboard test                        |
 | `bugfix/midi-follow-double-note`          | **Good** -- dedup logic test verifies handled output is skipped in general loop (upstream #4225)                      |
-| `bugfix/string-missing-return`            | **Good** -- to_chars overflow regression tests in upstream_bug_repro_test.cpp                                         |
 | `bugfix/kit-midi-learn-master-level`      | **Good** -- source contract test verifies `affectEntire` checked in both `potentialShortcutPadAction` and `setup()` |
 | `bugfix/midi-to-synth-crash-on-save`      | **Good** -- source contract test verifies stale MIDI metadata cleared in `changeOutputType` for MIDI_OUT |
 | `bugfix/multisample-octave-zero`           | **Good** -- source contract test verifies octave '0' accepted in `getComparativeNoteNumberFromChars` range check |
