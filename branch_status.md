@@ -80,9 +80,9 @@ To verify a bugfix branch is still needed, either:
 | `feature/midi-cc64-66-67-pedal`       | active | has-test    | CC64 sustain + CC66 sostenuto + CC67 soft pedal with `PedalState` bitfield | `tests/model/pedal_state_test.cpp`, `tests/processing/sustain_pedal_test.cpp`    | #4068 (open)   |
 | `feature/midi-separate-clock-transport`   | active | has-test    | Separate MIDI clock output from transport messages                        | `tests/playback/midi_transport_toggle_test.cpp`                                   | #1399 (open)   |
 | `feature/multisample-dirpath-dedup`       | active | has-test    | Shared dirPath on Source; splitPath/dirMatches utilities                   | `tests/storage/source_packed_filenames_test.cpp` (Source integration + PathUtils) | --             |
+| `feature/on-device-test-framework`        | active | has-test    | RECORD+boot self-test (POST + regression), PLAY+boot demo mode            | `tests/meta/on_device_test_framework_test.cpp` (compile gate + result types)      | #112           |
 | `feature/packed-filenames`                | active | has-test    | Single-alloc PackedFilenames buffer for multisample name storage          | `tests/storage/source_packed_filenames_test.cpp` (Source integration + 88-key)    | --             |
-| `feature/per-clip-tempo-ratio`            | active | has-test    | Per-clip tempo ratio (Bresenham accumulator)                              | `tests/model/tempo_ratio_test.cpp`                                                | --             |
-| `feature/per-clip-time-signature`         | active | has-test    | Per-clip `TimeSignature` struct for metronome                             | `tests/model/time_signature_test.cpp`                                             | --             |
+| `feature/polymeter-polyrhythm`            | active | has-test    | Per-clip tempo ratio + time signature (replaces per-clip-tempo-ratio + per-clip-time-signature) | `tests/model/tempo_ratio_test.cpp`, `tests/model/time_signature_test.cpp` (54 tests) | #122 |
 | `feature/swap-select-tempo-encoders`      | active | gui-only    | Runtime toggle to swap select/tempo encoder identities                    | none                                                                              | --             |
 | `fix/multisample-transpose-retrigger`     | active | has-test    | Master transpose into different sample zone re-triggers voice             | `tests/processing/multisample_transpose_test.cpp` (real `retriggerVoicesForTransposeChange()`) | -- |
 
@@ -99,7 +99,11 @@ To verify a bugfix branch is still needed, either:
 | `feature/midi-cc64-sustain-v2`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `feature/midi-cc67-soft-pedal`            | Superseded by `feature/midi-cc64-66-67-pedal`          |
 | `bugfix/midi-learned-param-display`       | Obsolete                                                   |
+| `bugfix/song-swap-cancel-back`            | No-op after rebase — upstream #4391 landed the exitUI refactor, song swap fix was fully reverted |
 | `bugfix/settings-exit-sd-race`            | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
+| `feature/per-clip-tempo-ratio`            | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
+| `feature/per-clip-time-signature`         | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
+| `temp/clip-features`                      | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
 | `kastenbalg/deferred-sd-operations`       | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
 
 ## Regression test analysis
@@ -137,6 +141,8 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/unsaved-synth-to-kit-row`          | **Good** -- source contract test verifies `existsOnCard` checked before destructive drum removal |
 | `bugfix/stereo-spread-osc-sync`            | **Good** -- source contract test verifies sync params (`doingOscSync`, `oscSyncPos`) in stereo rendering loop |
 | `fix/velocity-view-quantize-freeze`       | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
+| `feature/polymeter-polyrhythm`            | **Strong** -- 54 tests: tempo ratio Bresenham accumulator, overflow, menu round-trip, time signature metronome beat/bar detection, clip-local position tracking |
+| `feature/on-device-test-framework`        | **Good** -- compile gate + result type tests; full POST/regression/demo coverage is on-device only |
 
 ### Remaining untested testable branches
 
