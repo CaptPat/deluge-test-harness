@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (29)
+## Bugfix branches (28)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -52,7 +52,6 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/loop-undo-pending-overdub-crash`        | active     | has-test    | Use-after-free in `revertAction()`: `deletePendingOverdubs()` frees clips still referenced by action's consequences   | `tests/unit/action_references_clip_tests.cpp`, `tests/unit/loop_undo_guard_tests.cpp`       | #3746 (open)   |
 | `bugfix/lpf-drive-label-display`                | active     | has-test    | Filter morph labels show "morph" when should show "drive"/"FM" for ladder filters                                      | `tests/modulation/filter_morph_label_test.cpp` (family classification + label logic)        | --             |
 | `bugfix/macro-keyboard-visual-feedback`         | active     | gui-only    | Non-active macro pads not dimmed in keyboard session column                                                             | none                                                                                        | --             |
-| `bugfix/metronome-countin-toggle`               | active     | has-test    | Count-in plays metronome clicks even when metronome is off; session sync/tempoless record use wrong comparisons        | `tests/playback/metronome_countin_test.cpp` (extracted session + playback logic)             | --             |
 | `bugfix/midi-follow-double-note`                | active     | has-test    | MIDI Follow handles note then general loop visits same instrument — double `recordNoteOn()` and audible note clusters  | `tests/playback/midi_follow_dedup_test.cpp` (dedup logic)                                   | --             |
 | `bugfix/midi-to-synth-crash-on-save`            | active     | has-test    | Stale `midiBank/midiSub/midiPGM` after `changeOutputType()` from MIDI_OUT causes crash during save serialization      | `tests/meta/missing_branch_guard_test.cpp` (source contract: MIDI metadata cleared)         | #4014 (open)   |
 | `bugfix/mod-matrix-fast-scroll`                 | active     | gui-only    | OLED menu scroll jumps (wrong scroll position calc)                                                                    | none                                                                                        | #3899 (open)   |
@@ -98,6 +97,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/midi-learned-param-display`       | Obsolete                                                   |
 | `bugfix/arp-locked-prob-typo`             | Upstream merged our PR #4398 — fix now in baseline                                              |
 | `bugfix/browser-filepointer-cache`        | Upstream #4393 merged (different approach) — our cache approach superseded                       |
+| `bugfix/metronome-countin-toggle`         | Backed out — count-in clicking with metronome off is desired behavior for live recording |
 | `bugfix/song-swap-cancel-back`            | No-op after rebase — upstream #4391 landed the exitUI refactor, song swap fix was fully reverted |
 | `bugfix/string-missing-return`            | Upstream merged our PR #4396 — fix now in baseline                                              |
 | `bugfix/settings-exit-sd-race`            | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
@@ -126,7 +126,6 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
 | `feature/midi-cc64-66-67-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
-| `bugfix/metronome-countin-toggle`         | **Good** -- extracted count-in/playback/tempoless-record/sync-launch logic from session.cpp + playback_handler.cpp   |
 | `bugfix/settings-exit-sd-race-v3`         | **Good** -- source contract test verifies `addOnceTask(RESOURCE_SD)` in exitCompletely()                             |
 | `bugfix/settings-menu-exit-crash`         | **Good** -- source contract test verifies `getCurrentUI() != this` guard after goUpOneLevel()                        |
 | `bugfix/arp-ratchet-probability-cache`    | **Good** -- serialization test verifies ratchet probability field persistence                                         |
