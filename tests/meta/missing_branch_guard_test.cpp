@@ -195,7 +195,7 @@ TEST(UnsavedSynthToKitRowGuard, checksExistsOnCardBeforeLoad) {
 	auto body = src.substr(funcPos, 2000);
 
 	// existsOnCard check must appear before the destructive drum removal
-	auto existsPos = body.find("existsOnCard");
+	auto existsPos = body.find("maybeExistsOnCard");
 	CHECK_TEXT(existsPos != std::string::npos,
 	           "performLoadSynthToKit must check existsOnCard before loading — "
 	           "unsaved presets have no file on disk, and the existing drum would "
