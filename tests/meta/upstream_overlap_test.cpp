@@ -29,6 +29,7 @@ const std::map<std::string, std::vector<std::string>> knownOverlap = {
     {"reverb_filter_roundtrip_tests.cpp", {"tests/dsp/reverb_filter_roundtrip_test.cpp"}},
     {"packed_filenames_tests.cpp", {"tests/storage/source_packed_filenames_test.cpp"}},
     {"path_utils_tests.cpp", {"tests/storage/source_packed_filenames_test.cpp"}},
+    {"polymeter_metronome_tests.cpp", {"tests/model/tempo_ratio_test.cpp"}},
 };
 
 // Upstream tests with no harness equivalent (and why)
