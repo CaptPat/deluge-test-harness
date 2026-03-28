@@ -1,5 +1,6 @@
 build/
 build_*/
+build-utest/
 build-coverage/
 coverage/
 .cache/

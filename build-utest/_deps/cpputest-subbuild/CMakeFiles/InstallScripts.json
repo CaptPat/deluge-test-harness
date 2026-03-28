@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

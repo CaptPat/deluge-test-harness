@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/CMakeFiles/cpputest-populate"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/CMakeFiles/cpputest-populate.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/CMakeFiles/cpputest-populate-complete.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-build.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-configure.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-download.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-install.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-mkdir.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-patch.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-test.rule"
+		},
+		{
+			"file" : "P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/cpputest-subbuild/cpputest-populate-prefix/src/cpputest-populate-stamp/cpputest-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"cpputest-populate"
+		],
+		"name" : "cpputest-populate"
+	}
+}
