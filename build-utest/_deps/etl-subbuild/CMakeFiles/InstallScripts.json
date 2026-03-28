@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"P:/VSCodeDesktop/projects/deluge-test-harness/build-utest/_deps/etl-subbuild/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
