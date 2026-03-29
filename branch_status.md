@@ -36,15 +36,13 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (28)
+## Bugfix branches (25)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
 | `bugfix/arrangement-record-song-cast-crash`     | active     | testable    | `ModelStack` methods cast `Song*` as `Clip*` when recording song-level params in arrangement mode — crash on deref     | none (needs source contract test)                                                           | --             |
 | `bugfix/arp-ratchet-probability-cache`          | active     | has-test    | Ratchet probability not cached like other prob types — causes inconsistent arp ratcheting and stuck locked randomizer  | `tests/storage/model_serialization_test.cpp` (ratchet prob serialization)                   | #4298 (open)   |
-| `bugfix/browser-long-press-back-loads-preset`  | active     | gui-only    | `exitUI()` calls `exitAction()` instead of `Browser::close()`, loading the previewed preset                            | none                                                                                        | #4038 (open)   |
 | `bugfix/browser-number-search`                 | active     | has-test    | Off-by-one in `setFileByFullPath` (`>` to `>=`), numeric prefix matching                                               | `tests/util/browser_search_test.cpp`                                                        | #4105 (open)   |
-| `bugfix/browser-text-search-last-item`         | active     | has-test    | Last item unfindable in browser text search; same off-by-one + `notFound` label placement                              | `tests/util/browser_search_test.cpp`                                                        | #4039 (open)   |
 | `bugfix/chord-keyboard-melodic-minor-crash`     | active     | has-test    | Uninitialized `qualities[]` in `KeyboardLayoutChord` causes OOB access with melodic/harmonic/hungarian minor scales    | `tests/meta/upstream_bug_repro_test.cpp`, `tests/gui/chord_keyboard_test.cpp`               | #4284 (open)   |
 | `bugfix/envelope-sustain-zero-stuck`            | active     | has-test    | `smoothedSustain` goes negative when sustain=0, causing stuck notes                                                    | `tests/modulation/envelope_test.cpp` (real `Envelope::render()` with alignment-break trick) | #4029 (open)   |
 | `bugfix/grid-dim-pads-after-new-clip`           | active     | gui-only    | Missing `skipGreyoutFade()` before explode animation                                                                   | none                                                                                        | #3893 (open)   |
@@ -58,7 +56,6 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/multisample-octave-zero`                | active     | has-test    | `getComparativeNoteNumberFromChars()` rejects '0' as octave digit — filenames like "C0.wav" sort incorrectly           | `tests/meta/missing_branch_guard_test.cpp` (source contract: '0' accepted in range check)   | #3784 (open)   |
 | `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | #4284 (open)   |
 | `bugfix/patch-cables-fm-subtractive-switch`     | active     | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 (open)   |
-| `bugfix/reverb-filter-encoder-jumps`            | active     | has-test    | Float truncation drift in reverb HPF/LPF `readCurrentValue()` (missing `std::round()`)                                | `tests/dsp/reverb_filter_roundtrip_test.cpp` (round-trip math with real `Base` subclass)    | #4234 (open)   |
 | `bugfix/settings-exit-sd-race-v3`               | active     | has-test    | Re-entrant FatFS crash: defers settings writes via `addOnceTask(RESOURCE_SD)`                                          | `tests/meta/sd_race_guard_test.cpp` (source contract: `addOnceTask` in exitCompletely)      | #3898, #2759   |
 | `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | #4125 (open)   |
@@ -105,6 +102,9 @@ To verify a bugfix branch is still needed, either:
 | `feature/per-clip-time-signature`         | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
 | `temp/clip-features`                      | Superseded by `feature/polymeter-polyrhythm` (PR #123)     |
 | `kastenbalg/deferred-sd-operations`       | Superseded by `bugfix/settings-exit-sd-race-v3` (PR #95)   |
+| `bugfix/reverb-filter-encoder-jumps`      | Upstream merged our PR #4395 — fix now in baseline                                              |
+| `bugfix/browser-long-press-back-loads-preset` | Upstream merged our PR #4401 — fix now in baseline                                          |
+| `bugfix/browser-text-search-last-item`    | Subsumed by `bugfix/browser-number-search` (all fixes included)                                 |
 
 ## Regression test analysis
 
@@ -121,8 +121,7 @@ To verify a bugfix branch is still needed, either:
 | `fix/multisample-transpose-retrigger`     | **Strong** -- real `retriggerVoicesForTransposeChange()` + `Source::getRange()` with two-zone multisamples            |
 | `feature/packed-filenames`                | **Strong** -- real Source integration: getFullPath, unpackFilenames, revertToFullPaths with 88-key piano scenario     |
 | `feature/multisample-dirpath-dedup`       | **Strong** -- real splitPath/dirMatches + Source dirPath reconstruction across packed/unpacked/revert paths           |
-| `bugfix/reverb-filter-encoder-jumps`      | **Good** -- tests float round-trip math via `Base` subclass, covers the essential truncation vs rounding bug          |
-| `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate)                               |
+| `bugfix/browser-number-search`            | **Good** -- simulation of search logic (real `Browser` class too heavy to instantiate); subsumes text-search-last-item |
 | `bugfix/loop-undo-pending-overdub-crash`  | **Good** -- unit tests for `Action::referencesClip()` + source contract tests for `deletePendingOverdubs` guard      |
 | `bugfix/lpf-drive-label-display`          | **Good** -- tests `SpecificFilter::getFamily()` classification that drives label selection                           |
 | `feature/midi-cc64-66-67-pedal`       | **Strong** -- real `Voice::noteOff()` with pedal state machine, full lifecycle tests                                 |
