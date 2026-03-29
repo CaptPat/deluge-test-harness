@@ -4,72 +4,65 @@
 First successful bidirectional MIDI test with the Deluge.
 2026-03-28, Cable Matters USB-to-DIN adapter.
 
-Usage: python HAL9000.py [port_name]
+Plays "Daisy Bell Instrumental.mid" through the Deluge.
+Ctrl+C sends all-notes-off and closes the port cleanly.
+
+Usage: python HAL9000.py [port_name] [midi_file]
 Default port: "USB MIDI 2"
+Default file: P:/Deluge/CARD1/SONGS/Daisy Bell Instrumental.mid
 """
 
+import signal
 import sys
 import time
 
 import mido
 
-
-def play(out, n, beats, vel=72, beat_dur=0.30):
-    out.send(mido.Message("note_on", channel=0, note=n, velocity=vel))
-    time.sleep(beats * beat_dur)
-    out.send(mido.Message("note_off", channel=0, note=n, velocity=0))
-    time.sleep(0.02)
+# Graceful shutdown flag
+_interrupted = False
 
 
-def daisy_bell(port_name="USB MIDI 2"):
+def _on_interrupt(sig, frame):
+    global _interrupted
+    _interrupted = True
+
+
+def all_notes_off(out):
+    """Send all-notes-off (CC 123) on all 16 channels."""
+    for ch in range(16):
+        out.send(mido.Message("control_change", channel=ch, control=123, value=0))
+
+
+def play_midi_file(port_name, midi_path):
+    mid = mido.MidiFile(midi_path)
+    print(f"Playing {midi_path} ({mid.length:.0f}s, {len(mid.tracks)} tracks)")
+    print(f"Port: {port_name}")
+    print("Press Ctrl+C to stop.\n")
+
     out = mido.open_output(port_name)
+    signal.signal(signal.SIGINT, _on_interrupt)
 
-    # G is UP (G5=79), melody arcs over C major
-    C, D, E, F, G, A, B = 72, 74, 76, 77, 79, 69, 71
+    try:
+        for msg in mid.play():
+            if _interrupted:
+                print("\nInterrupted — sending all-notes-off...")
+                break
+            if not msg.is_meta:
+                out.send(msg)
 
-    print("Daisy Bell...")
-
-    # GGG EEE CCC GGG ABC AAC GGG GGG
-    play(out, G, 3, 70)
-    play(out, E, 3, 65)
-    play(out, C, 3, 70)
-    play(out, G, 3, 65)
-    play(out, A, 1, 65)
-    play(out, B, 1, 65)
-    play(out, C, 1, 70)
-    play(out, A, 2, 60)
-    play(out, C, 1, 65)
-    play(out, G, 3, 55)
-    play(out, G, 3, 50)
-
-    # DDD GGG EEE CCC ABC DDE DDD DDE FED GGE DCC CCD EE
-    play(out, D, 3, 70)
-    play(out, G, 3, 65)
-    play(out, E, 3, 65)
-    play(out, C, 3, 70)
-    play(out, A, 1, 65)
-    play(out, B, 1, 65)
-    play(out, C, 1, 70)
-    play(out, D, 2, 65)
-    play(out, E, 1, 65)
-    play(out, D, 3, 60)
-    play(out, D, 2, 65)
-    play(out, E, 1, 65)
-    play(out, F, 1, 70)
-    play(out, E, 1, 65)
-    play(out, D, 1, 60)
-    play(out, G, 2, 70)
-    play(out, E, 1, 65)
-    play(out, D, 1, 60)
-    play(out, C, 2, 65)
-    play(out, C, 2, 70)
-    play(out, D, 1, 65)
-    play(out, E, 4, 50)
-
-    print("I am a HAL 9000 computer.")
-    out.close()
+        if not _interrupted:
+            print("\nI am a HAL 9000 computer.")
+    finally:
+        all_notes_off(out)
+        out.close()
+        print("Port closed.")
 
 
 if __name__ == "__main__":
     port = sys.argv[1] if len(sys.argv) > 1 else "USB MIDI 2"
-    daisy_bell(port)
+    midi_file = (
+        sys.argv[2]
+        if len(sys.argv) > 2
+        else "P:/Deluge/CARD1/SONGS/Daisy Bell Instrumental.mid"
+    )
+    play_midi_file(port, midi_file)
