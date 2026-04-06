@@ -11,3 +11,4 @@ compile_commands.json
 build2/
 baselines/
 *.ipynb
+__pycache__/
