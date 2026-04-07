@@ -36,7 +36,7 @@ To verify a bugfix branch is still needed, either:
 
 ---
 
-## Bugfix branches (25)
+## Bugfix branches (22 active, 3 obsolete)
 
 | Branch                                         | Status     | Testability | What it fixes                                                                                                          | Harness test                                                                                | Upstream issue |
 | ---------------------------------------------- | ---------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
@@ -52,10 +52,10 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/macro-keyboard-visual-feedback`         | active     | gui-only    | Non-active macro pads not dimmed in keyboard session column                                                             | none                                                                                        | --             |
 | `bugfix/midi-follow-double-note`                | active     | has-test    | MIDI Follow handles note then general loop visits same instrument — double `recordNoteOn()` and audible note clusters  | `tests/playback/midi_follow_dedup_test.cpp` (dedup logic)                                   | --             |
 | `bugfix/midi-to-synth-crash-on-save`            | active     | has-test    | Stale `midiBank/midiSub/midiPGM` after `changeOutputType()` from MIDI_OUT causes crash during save serialization      | `tests/meta/missing_branch_guard_test.cpp` (source contract: MIDI metadata cleared)         | #4014 (open)   |
-| `bugfix/mod-matrix-fast-scroll`                 | active     | gui-only    | OLED menu scroll jumps (wrong scroll position calc)                                                                    | none                                                                                        | #3899 (open)   |
+| `bugfix/mod-matrix-fast-scroll`                 | obsolete   | gui-only    | OLED menu scroll jumps (wrong scroll position calc)                                                                    | none                                                                                        | #3899 — fixed by upstream #4442 |
 | `bugfix/multisample-octave-zero`                | active     | has-test    | `getComparativeNoteNumberFromChars()` rejects '0' as octave digit — filenames like "C0.wav" sort incorrectly           | `tests/meta/missing_branch_guard_test.cpp` (source contract: '0' accepted in range check)   | #3784 (open)   |
 | `bugfix/notes-state-const-iterator`             | active     | has-test    | `NotesState::end()` uses `notes.end() + count` instead of `notes.begin() + count`                                     | `tests/gui/notes_state_test.cpp` (real `NotesState` class)                                  | #4284 (open)   |
-| `bugfix/patch-cables-fm-subtractive-switch`     | active     | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 (open)   |
+| `bugfix/patch-cables-fm-subtractive-switch`     | obsolete   | has-test    | `setSynthMode()` restores filter modes AFTER `setupPatchingForAllParamManagers()` -- stale `lpfMode=OFF`               | `tests/processing/synth_mode_test.cpp` (real `setSynthMode()` with filter/knob assertions)  | #4232 — fixed by upstream #4440 |
 | `bugfix/settings-exit-sd-race-v3`               | active     | has-test    | Re-entrant FatFS crash: defers settings writes via `addOnceTask(RESOURCE_SD)`                                          | `tests/meta/sd_race_guard_test.cpp` (source contract: `addOnceTask` in exitCompletely)      | #3898, #2759   |
 | `bugfix/settings-menu-exit-crash`               | active     | has-test    | Stale menu pointer deref after `exitCompletely()` changes active UI                                                    | `tests/meta/sd_race_guard_test.cpp` (source contract: `getCurrentUI()` guard present)       | #3898, #2759   |
 | `bugfix/song-browser-loop-fix`                  | active     | gui-only    | Song browser wrap-around broken when file list is windowed                                                              | none                                                                                        | #4125 (open)   |
@@ -64,7 +64,7 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/unsaved-synth-to-kit-row`               | active     | has-test    | Missing `existsOnCard` check before destructive drum removal — unsaved presets cause FILE_NOT_FOUND after drum deleted | `tests/meta/missing_branch_guard_test.cpp` (source contract: existsOnCard before load)      | --             |
 | `bugfix/velocity-view-multi-note-delete`        | active     | gui-only    | Velocity-head press wrongly enters multi-pad ramp mode instead of delete                                                | none                                                                                        | #3985 (open)   |
 | `bugfix/wavetable-mod-knob-overwrite`           | active     | has-test    | Default mod knob mappings set on every sample swap, not just wavetable transition                                      | `tests/processing/wavetable_mod_knob_test.cpp` (real `applyWavetableModKnobDefaults()`)     | --             |
-| `fix/velocity-view-quantize-freeze`             | active     | has-test    | Missing `UI_MODE_QUANTIZE` handler in AutomationView causes partial freeze when quantizing in Velocity View            | `tests/meta/quantize_freeze_guard_test.cpp` (source contract: quantize handler + public visibility) | #3718 (open) |
+| `fix/velocity-view-quantize-freeze`             | obsolete   | has-test    | Missing `UI_MODE_QUANTIZE` handler in AutomationView causes partial freeze when quantizing in Velocity View            | `tests/meta/quantize_freeze_guard_test.cpp` (source contract: quantize handler + public visibility) | #3718 — fixed by upstream #4433 |
 
 ## Feature branches (8)
 
@@ -105,6 +105,9 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/reverb-filter-encoder-jumps`      | Upstream merged our PR #4395 — fix now in baseline                                              |
 | `bugfix/browser-long-press-back-loads-preset` | Upstream merged our PR #4401 — fix now in baseline                                          |
 | `bugfix/browser-text-search-last-item`    | Subsumed by `bugfix/browser-number-search` (all fixes included)                                 |
+| `bugfix/mod-matrix-fast-scroll`           | Fixed by upstream #4442 (superior `std::clamp` approach)                                        |
+| `bugfix/patch-cables-fm-subtractive-switch` | Fixed by upstream #4440 (same bug, cleaner minimal fix)                                       |
+| `fix/velocity-view-quantize-freeze`       | Fixed by upstream #4433 (more complete implementation)                                          |
 
 ## Regression test analysis
 
@@ -116,7 +119,6 @@ To verify a bugfix branch is still needed, either:
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `bugfix/envelope-sustain-zero-stuck`      | **Strong** -- real `Envelope::render()` with deliberate alignment-breaking to provoke negative overshoot              |
 | `bugfix/notes-state-const-iterator`       | **Strong** -- real `NotesState` class, const/mutable end() agreement verified                                         |
-| `bugfix/patch-cables-fm-subtractive-switch` | **Strong** -- real `setSynthMode()` with filter mode + mod knob assertions across all mode transitions              |
 | `bugfix/wavetable-mod-knob-overwrite`     | **Strong** -- real `applyWavetableModKnobDefaults()` with wasAlreadyWavetable guard                                  |
 | `fix/multisample-transpose-retrigger`     | **Strong** -- real `retriggerVoicesForTransposeChange()` + `Source::getRange()` with two-zone multisamples            |
 | `feature/packed-filenames`                | **Strong** -- real Source integration: getFullPath, unpackFilenames, revertToFullPaths with 88-key piano scenario     |
@@ -135,7 +137,6 @@ To verify a bugfix branch is still needed, either:
 | `bugfix/multisample-octave-zero`           | **Good** -- source contract test verifies octave '0' accepted in `getComparativeNoteNumberFromChars` range check |
 | `bugfix/unsaved-synth-to-kit-row`          | **Good** -- source contract test verifies `existsOnCard` checked before destructive drum removal |
 | `bugfix/stereo-spread-osc-sync`            | **Good** -- source contract test verifies sync params (`doingOscSync`, `oscSyncPos`) in stereo rendering loop |
-| `fix/velocity-view-quantize-freeze`       | **Good** -- source contract test verifies `UI_MODE_QUANTIZE` handler in `handleAuditionPadAction` and public `commandStopQuantize` |
 | `feature/polymeter-polyrhythm`            | **Strong** -- 54 tests: tempo ratio Bresenham accumulator, overflow, menu round-trip, time signature metronome beat/bar detection, clip-local position tracking |
 | `feature/on-device-test-framework`        | **Good** -- compile gate + result type tests; full POST/regression/demo coverage is on-device only |
 
