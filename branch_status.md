@@ -70,6 +70,7 @@ To verify a bugfix branch is still needed, either:
 
 | Branch                                    | Status | Testability | What it adds                                                              | Harness test                                                                      | Upstream issue |
 | ----------------------------------------- | ------ | ----------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------- |
+| `feature/enable-l2-cache`             | active | has-test    | Enable PL310 L2 data cache (~45% SDRAM speedup) + DMA cache maintenance + FatFS buffer alignment | `tests/unit/cache_maintenance_tests.cpp` (x86), on-device DMA coherency tests in self-test framework | -- |
 | `feature/midi-cc64-66-67-pedal`       | active | has-test    | CC64 sustain + CC66 sostenuto + CC67 soft pedal with `PedalState` bitfield | `tests/model/pedal_state_test.cpp`, `tests/processing/sustain_pedal_test.cpp`    | #4068 (open)   |
 | `feature/midi-separate-clock-transport`   | active | has-test    | Separate MIDI clock output from transport messages                        | `tests/playback/midi_transport_toggle_test.cpp`                                   | #1399 (open)   |
 | `feature/multisample-dirpath-dedup`       | active | has-test    | Shared dirPath on Source; splitPath/dirMatches utilities                   | `tests/storage/source_packed_filenames_test.cpp` (Source integration + PathUtils) | --             |
