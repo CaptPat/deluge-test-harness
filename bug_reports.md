@@ -2,6 +2,8 @@
 
 Firmware version: `nightly` (commit `5bdf3166`)
 
+**Last reviewed: 2026-04-08 — all 5 bugs resolved upstream.**
+
 ---
 
 ## Bug 1: GranularProcessor copy constructor uses uninitialized `grainBuffer` pointer
@@ -54,7 +56,7 @@ On the next call to `processGrainFX()` (`GranularProcessor.cpp:47`), the entry c
 
 ## Bug 3: `GranularProcessor` destructor uses `delete` on placement-new'd memory from custom allocator
 
-**Status:** Reported as [#4358](https://github.com/SynthstromAudible/DelugeFirmware/issues/4358). Still open upstream.
+**Status:** Fixed upstream. [#4358](https://github.com/SynthstromAudible/DelugeFirmware/issues/4358) closed as COMPLETED (2026-03-07).
 
 **Description:**
 
@@ -86,7 +88,7 @@ On the Deluge's ARM target, this may happen to work if `GeneralMemoryAllocator` 
 
 ## Bug 4: Missing `return` in `to_chars()` — buffer overflow falls through silently
 
-**Status:** Reported as [#4372](https://github.com/SynthstromAudible/DelugeFirmware/issues/4372). Fixed in our harness build (commit `f7548a58`).
+**Status:** Fixed upstream. [#4372](https://github.com/SynthstromAudible/DelugeFirmware/issues/4372) closed as COMPLETED (2026-03-26). Also fixed in our harness build (commit `f7548a58`).
 
 **Description:**
 
@@ -98,7 +100,7 @@ In `util/string.cpp:25`, `std::unexpected{...}` is constructed but never returne
 
 ## Bug 5: `setSynthMode()` restores filter modes after `setupPatchingForAllParamManagers()`
 
-**Status:** Reported as [#4232](https://github.com/SynthstromAudible/DelugeFirmware/issues/4232). Still open upstream.
+**Status:** Fixed upstream via [#4440](https://github.com/SynthstromAudible/DelugeFirmware/pull/4440). [#4232](https://github.com/SynthstromAudible/DelugeFirmware/issues/4232) closed as COMPLETED (2026-04-07).
 
 **Description:**
 
