@@ -5,14 +5,35 @@ Branch: personal/nightly (34 branches merged)
 Tool: gcov (GCC 15.2.0) with --coverage instrumentation
 Tests: 3,761 tests (3,757 ran, 4 ignored, 6 known failures)
 
-## Overall Coverage
+## Firmware Size (pygount, code lines only — excludes comments/blanks)
 
-| Metric | Value | Change from 2026-03-18 |
-|--------|-------|----------------------|
-| Files measured | 363 | +194 |
-| Total instrumentable lines | 9,841 | +212 |
-| Lines executed | 7,682 | +437 |
-| **Line coverage** | **78.1%** | **+2.9%** |
+| Layer | Code Lines | Testable on x86? |
+|-------|-----------|------------------|
+| Deluge core (src/deluge/) | 131,168 | Partially — requires mocks |
+| RZA1 HAL/drivers (src/RZA1/) | 64,796 | No — ARM hardware |
+| FatFS (src/fatfs/) | 20,698 | No — hardware DMA |
+| **Total firmware** | **216,662** | |
+
+## Test Harness Coverage
+
+| Metric | Value |
+|--------|-------|
+| x86 tests | 3,761 |
+| Files compiled into harness | 363 |
+| Instrumentable lines (harness) | 9,841 |
+| Lines executed | 7,682 |
+| Harness coverage (of compiled code) | 78.1% |
+| **Effective coverage (of Deluge core)** | **5.9%** (7,682 / 131,168) |
+| **Effective coverage (of total firmware)** | **3.5%** (7,682 / 216,662) |
+
+### Why effective coverage is low
+
+The test harness can only compile firmware code that doesn't directly call hardware.
+Every new firmware module pulled into the harness requires mocking its hardware
+dependencies (DMA, GPIO, SSI, PIC, SDHI, USB). Each mock is hand-written.
+Current mocks cover: audio engine (partial), display, memory allocator, MIDI engine,
+timer, print/debug. Major unmocked areas: SD/FatFS, USB stack, SSI audio DMA,
+PIC protocol, interrupt handlers, boot sequence.
 
 ## Testing Modes
 
