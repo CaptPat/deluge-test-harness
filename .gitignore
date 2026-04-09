@@ -12,3 +12,4 @@ build2/
 baselines/
 *.ipynb
 __pycache__/
+docs/superpowers/
