@@ -54,6 +54,7 @@ _START_DEMO = 0x12
 _LOAD_SONG = 0x13
 _SAVE_SONG = 0x14
 _ENABLE_STATUS_CC = 0x15
+_SET_MIDI_LEARN = 0x16
 
 # ACK codes
 ACK_OK = 0x00
@@ -691,6 +692,59 @@ class DelugeClient:
         d = reply.data
         ack = d[6] if len(d) > 6 else ACK_ERROR
         return ack == ACK_OK
+
+    def set_midi_learn(self, command_index: int, channel: int, cc: int) -> bool:
+        """Programmatically set a GlobalMIDICommand mapping.
+
+        Args:
+            command_index: GlobalMIDICommand enum value (0=PLAYBACK_RESTART,
+                1=PLAY, 2=RECORD, 3=TAP, 4=LOOP, 5=LOOP_CONTINUOUS_LAYERING,
+                6=UNDO, 7=REDO, 8=FILL, 9=TRANSPOSE, 10=NEXT_SONG,
+                11+=STATUS_SRAM..STATUS_MODE when ENABLE_SYSEX_STATUS)
+            channel: MIDI channel 0-15.
+            cc: CC number 0-127.
+
+        Returns:
+            True if the Deluge replied ACK_OK.
+        """
+        payload = bytes([command_index, channel, cc])
+        msg_data = _build_status_sysex(_SET_MIDI_LEARN, payload)
+        reply = self._send_and_recv(
+            msg_data,
+            lambda m: _is_status_reply(m, _SET_MIDI_LEARN),
+        )
+        if reply is None:
+            return False
+        d = reply.data
+        ack = d[6] if len(d) > 6 else ACK_ERROR
+        return ack == ACK_OK
+
+    def setup_test_mappings(self) -> dict[str, bool]:
+        """Configure all GlobalMIDICommand CC mappings for test automation.
+
+        Sets up a standard set of CC assignments on channel 1 so the Python
+        test harness can control the device without manual MIDI Learn.
+
+        Returns:
+            Dict of command name -> success bool.
+        """
+        mappings = {
+            "PLAYBACK_RESTART": (0, 0, 101),
+            "PLAY": (1, 0, 102),
+            "RECORD": (2, 0, 103),
+            "TAP": (3, 0, 105),
+            "LOOP": (4, 0, 104),
+            "LOOP_LAYERING": (5, 0, 106),
+            "UNDO": (6, 0, 107),
+            "REDO": (7, 0, 108),
+            "FILL": (8, 0, 109),
+            "TRANSPOSE": (9, 0, 110),
+            "NEXT_SONG": (10, 0, 112),
+        }
+        results = {}
+        for name, (idx, ch, cc) in mappings.items():
+            results[name] = self.set_midi_learn(idx, ch, cc)
+        return results
 
     # ------------------------------------------------------------------
     # Transport CC
