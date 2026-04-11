@@ -55,6 +55,7 @@ _LOAD_SONG = 0x13
 _SAVE_SONG = 0x14
 _ENABLE_STATUS_CC = 0x15
 _SET_MIDI_LEARN = 0x16
+_GET_MIDI_LEARN = 0x17
 
 # ACK codes
 ACK_OK = 0x00
@@ -719,6 +720,60 @@ class DelugeClient:
         ack = d[6] if len(d) > 6 else ACK_ERROR
         return ack == ACK_OK
 
+    def get_midi_learn(self) -> dict[int, tuple[int, int]]:
+        """Read all GlobalMIDICommand mappings from the device.
+
+        Returns:
+            Dict of command_index -> (channel, cc).
+            Unlearned entries (0x7F, 0x7F) are omitted.
+        """
+        msg_data = _build_status_sysex(_GET_MIDI_LEARN)
+        reply = self._send_and_recv(
+            msg_data,
+            lambda m: _is_status_reply(m, _GET_MIDI_LEARN),
+        )
+        if reply is None:
+            return {}
+        d = reply.data
+        # Skip header: manufacturer(3) + family(1) + cmd(1) + subcmd(1) = 6 bytes
+        payload = d[6:]
+        mappings = {}
+        i = 0
+        while i + 2 < len(payload):
+            idx = payload[i]
+            ch = payload[i + 1]
+            cc = payload[i + 2]
+            if ch != 0x7F and cc != 0x7F:
+                mappings[idx] = (ch, cc)
+            i += 3
+        return mappings
+
+    def save_and_restore_midi_learn(self):
+        """Context manager that saves current MIDI Learn mappings and restores on exit.
+
+        Usage:
+            with client.save_and_restore_midi_learn():
+                client.setup_test_mappings()
+                # ... run tests ...
+            # original mappings restored here
+        """
+        import contextlib
+
+        @contextlib.contextmanager
+        def _ctx():
+            saved = self.get_midi_learn()
+            try:
+                yield saved
+            finally:
+                # Restore all saved mappings
+                for idx, (ch, cc) in saved.items():
+                    self.set_midi_learn(idx, ch, cc)
+                # Clear any mappings we set that weren't in the original
+                # (set channel to 0x7F which is > 15, will be rejected —
+                #  but we can't "unlearn" via this API yet, so just leave them)
+
+        return _ctx()
+
     def setup_test_mappings(self) -> dict[str, bool]:
         """Configure all GlobalMIDICommand CC mappings for test automation.
 
@@ -729,6 +784,7 @@ class DelugeClient:
             Dict of command name -> success bool.
         """
         mappings = {
+            # Transport commands (ch1, CCs 101-112)
             "PLAYBACK_RESTART": (0, 0, 101),
             "PLAY": (1, 0, 102),
             "RECORD": (2, 0, 103),
@@ -740,6 +796,13 @@ class DelugeClient:
             "FILL": (8, 0, 109),
             "TRANSPOSE": (9, 0, 110),
             "NEXT_SONG": (10, 0, 112),
+            # Status CC outputs (ch1, CCs 114-119) — sent on DIN out
+            "STATUS_SRAM": (11, 0, 114),
+            "STATUS_SDRAM": (12, 0, 115),
+            "STATUS_VOICES": (13, 0, 116),
+            "STATUS_BUDGET": (14, 0, 117),
+            "STATUS_SWAP": (15, 0, 118),
+            "STATUS_MODE": (16, 0, 119),
         }
         results = {}
         for name, (idx, ch, cc) in mappings.items():
